@@ -1,888 +1,1108 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Homework Hub</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PostHub</title>
 <style>
-
-/* ─────────────────────────────────────────
-   KILL THE BLUE TAP HIGHLIGHT EVERYWHERE
-───────────────────────────────────────── */
 *, *::before, *::after {
   box-sizing: border-box;
-  margin: 0; padding: 0;
+  margin: 0;
+  padding: 0;
   -webkit-tap-highlight-color: transparent;
-  -webkit-touch-callout: none;
   outline: none;
 }
-button, a, select, input, label {
-  -webkit-tap-highlight-color: transparent;
-  tap-highlight-color: transparent;
-}
 
-/* ─────────────────────────────────────────
-   ROOT TOKENS — pure black & white
-───────────────────────────────────────── */
 :root {
-  --bg:       #000000;
-  --surface:  #0d0d0d;
-  --card:     #111111;
-  --border:   #222222;
-  --border2:  #2e2e2e;
-  --text:     #ffffff;
-  --sub:      #aaaaaa;
-  --muted:    #666666;
-  --accent:   #ffffff;
-  --r:        12px;
-  --rsm:      8px;
+  --bg: #0f0f0f;
+  --surface: #1a1a1a;
+  --surface2: #222;
+  --border: #2a2a2a;
+  --text: #f1f1f1;
+  --text2: #aaa;
+  --text3: #666;
+  --accent: #3ea6ff;
+  --accent-hover: #65b8ff;
+  --red: #ff4444;
+  --radius: 8px;
+  --nav-h: 56px;
+  --sidebar-w: 240px;
 }
-
-html { scroll-behavior: smooth; }
 
 body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif;
   background: var(--bg);
   color: var(--text);
-  font-family: 'Inter', sans-serif;
-  font-size: 14px;
   min-height: 100vh;
   overflow-x: hidden;
 }
 
-/* ─────────────────────────────────────────
-   SETUP BANNER
-───────────────────────────────────────── */
-#setupBanner {
-  display: none;
-  background: #0d0d0d;
-  border-bottom: 1px solid var(--border2);
-  padding: 14px 20px;
-  text-align: center;
-}
-#setupBanner p { font-size: 13px; color: var(--sub); margin-bottom: 10px; }
-#setupBanner p strong { color: #fff; }
-
-.btn-setup {
-  background: #fff;
-  color: #000;
-  border: none;
-  padding: 9px 22px;
-  border-radius: 100px;
-  font-family: 'Inter', sans-serif;
-  font-weight: 700;
-  font-size: 13px;
-  cursor: pointer;
-  transition: opacity .15s;
-  -webkit-tap-highlight-color: transparent;
-}
-.btn-setup:active { opacity: .7; }
-.btn-setup:disabled { opacity: .4; cursor: not-allowed; }
-
-.setup-log {
-  margin-top: 10px;
-  font-size: 11px;
-  color: var(--muted);
-  max-height: 80px;
-  overflow-y: auto;
-  text-align: left;
-  padding: 0 4px;
-}
-.setup-log .ok  { color: #6fcf97; }
-.setup-log .err { color: #eb5757; }
-
-/* ─────────────────────────────────────────
-   LAYOUT
-───────────────────────────────────────── */
-.wrap {
-  max-width: 860px;
-  margin: 0 auto;
-  padding: 0 16px;
-}
-
-/* ─────────────────────────────────────────
-   HEADER
-───────────────────────────────────────── */
-header {
-  padding: 52px 0 40px;
-  text-align: center;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 40px;
-}
-
-.pill {
-  display: inline-flex;
+/* ── TOPBAR ── */
+.topbar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: var(--nav-h);
+  background: var(--bg);
+  display: flex;
   align-items: center;
-  gap: 7px;
-  border: 1px solid var(--border2);
-  border-radius: 100px;
-  padding: 4px 14px 4px 10px;
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: .06em;
-  text-transform: uppercase;
-  color: var(--sub);
-  margin-bottom: 20px;
-}
-.pill .dot {
-  width: 6px; height: 6px;
-  background: #6fcf97;
-  border-radius: 50%;
-  display: inline-block;
-  animation: blink 2s infinite;
-}
-@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
-
-h1 {
-  font-size: clamp(2rem, 8vw, 3.8rem);
-  font-weight: 900;
-  letter-spacing: -.04em;
-  line-height: 1.05;
-  color: #fff;
-  margin-bottom: 12px;
+  padding: 0 16px;
+  gap: 12px;
+  z-index: 200;
+  border-bottom: 1px solid var(--border);
 }
 
-header p {
-  font-size: 14px;
-  color: var(--muted);
-  line-height: 1.6;
-  max-width: 360px;
+.topbar-logo {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  color: var(--text);
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  min-width: 130px;
+}
+
+.topbar-logo span {
+  color: var(--accent);
+}
+
+.topbar-search {
+  flex: 1;
+  max-width: 600px;
   margin: 0 auto;
-}
-
-/* ─────────────────────────────────────────
-   UPLOAD CARD
-───────────────────────────────────────── */
-.card {
+  display: flex;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--r);
-  padding: 24px;
-  margin-bottom: 44px;
-}
-
-.card-heading {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: .1em;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-bottom: 20px;
-}
-
-/* Drop zone */
-.dropzone {
-  border: 1px dashed var(--border2);
-  border-radius: var(--rsm);
-  padding: 32px 20px;
-  text-align: center;
-  cursor: pointer;
-  transition: background .15s, border-color .15s;
-  position: relative;
-  margin-bottom: 18px;
-  -webkit-tap-highlight-color: transparent;
-}
-.dropzone:hover { background: #111; border-color: #444; }
-.dropzone.over  { background: #161616; border-color: #555; }
-.dropzone input[type=file] {
-  position: absolute; inset: 0;
-  opacity: 0; cursor: pointer;
-  width: 100%; height: 100%;
-  -webkit-tap-highlight-color: transparent;
-}
-.dz-icon { font-size: 2rem; display: block; margin-bottom: 10px; }
-.dropzone strong {
-  display: block;
-  font-size: 14px;
-  font-weight: 600;
-  color: #fff;
-  margin-bottom: 4px;
-}
-.dropzone span {
-  font-size: 12px;
-  color: var(--muted);
-}
-.file-picked {
-  margin-top: 10px;
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--sub);
-}
-
-/* Form row */
-.form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-bottom: 16px;
-}
-@media(max-width:500px){ .form-row { grid-template-columns: 1fr; } }
-
-.fg { display: flex; flex-direction: column; gap: 6px; }
-.fg label { font-size: 11px; font-weight: 600; color: var(--muted); letter-spacing: .04em; text-transform: uppercase; }
-
-.fg input, .fg select {
-  background: var(--card);
-  border: 1px solid var(--border2);
-  border-radius: var(--rsm);
-  color: #fff;
-  font-family: 'Inter', sans-serif;
-  font-size: 14px;
-  padding: 10px 13px;
-  transition: border-color .15s;
-  -webkit-appearance: none;
-  appearance: none;
-  -webkit-tap-highlight-color: transparent;
-}
-.fg input::placeholder { color: var(--muted); }
-.fg input:focus, .fg select:focus { border-color: #555; }
-.fg select {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23666'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 13px center;
-  padding-right: 32px;
-  cursor: pointer;
-}
-.fg select option { background: #111; }
-
-/* Upload button */
-.btn-primary {
-  width: 100%;
-  padding: 13px;
-  background: #fff;
-  color: #000;
-  border: none;
-  border-radius: var(--rsm);
-  font-family: 'Inter', sans-serif;
-  font-size: 14px;
-  font-weight: 700;
-  cursor: pointer;
-  letter-spacing: .01em;
-  transition: opacity .15s;
-  -webkit-tap-highlight-color: transparent;
-  user-select: none;
-}
-.btn-primary:active:not(:disabled) { opacity: .75; }
-.btn-primary:disabled { opacity: .35; cursor: not-allowed; }
-
-/* Progress */
-.prog-wrap { display: none; margin-top: 14px; }
-.prog-wrap.on { display: block; }
-.prog-track {
-  background: var(--border);
-  border-radius: 100px;
-  height: 3px;
+  border-radius: 40px;
   overflow: hidden;
-}
-.prog-fill {
-  height: 100%;
-  width: 0%;
-  background: #fff;
-  border-radius: 100px;
-  transition: width .35s ease;
-}
-.prog-label {
-  font-size: 11px;
-  color: var(--muted);
-  margin-top: 6px;
-  text-align: center;
+  transition: border-color 0.2s;
 }
 
-/* Alerts */
-.alert { display: none; padding: 11px 14px; border-radius: var(--rsm); font-size: 13px; margin-top: 14px; font-weight: 500; }
-.alert.on { display: flex; align-items: center; gap: 8px; }
-.alert.ok  { background: rgba(111,207,151,.08); border: 1px solid rgba(111,207,151,.25); color: #6fcf97; }
-.alert.err { background: rgba(235,87,87,.08);   border: 1px solid rgba(235,87,87,.25);   color: #eb5757; }
+.topbar-search:focus-within {
+  border-color: var(--accent);
+}
 
-/* ─────────────────────────────────────────
-   GALLERY
-───────────────────────────────────────── */
-.gallery-head {
+.topbar-search input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  padding: 8px 18px;
+  font-size: 14px;
+  color: var(--text);
+  font-family: inherit;
+}
+
+.topbar-search input::placeholder { color: var(--text3); }
+
+.topbar-search button {
+  background: var(--surface2);
+  border: none;
+  border-left: 1px solid var(--border);
+  padding: 0 18px;
+  cursor: pointer;
+  color: var(--text2);
+  font-size: 15px;
+  transition: background 0.2s;
+}
+
+.topbar-search button:hover { background: var(--border); }
+
+.topbar-actions {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-bottom: 20px;
-}
-.gallery-title {
-  font-size: 18px;
-  font-weight: 800;
-  letter-spacing: -.02em;
+  gap: 8px;
+  margin-left: auto;
 }
 
-/* Filter scroll row */
-.filters {
+.btn-upload-top {
   display: flex;
+  align-items: center;
   gap: 6px;
-  overflow-x: auto;
-  padding-bottom: 4px;
-  scrollbar-width: none;
-  -webkit-overflow-scrolling: touch;
-  flex-wrap: nowrap;
-  max-width: 100%;
-}
-.filters::-webkit-scrollbar { display: none; }
-
-.fbtn {
-  flex-shrink: 0;
-  padding: 6px 14px;
-  border-radius: 100px;
-  border: 1px solid var(--border2);
-  background: transparent;
-  color: var(--muted);
-  font-family: 'Inter', sans-serif;
-  font-size: 12px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 7px 14px;
+  border-radius: 40px;
+  font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  transition: border-color .15s, color .15s, background .15s;
+  transition: background 0.2s;
   white-space: nowrap;
-  -webkit-tap-highlight-color: transparent;
+}
+
+.btn-upload-top:hover { background: var(--border); }
+
+/* ── LAYOUT ── */
+.layout {
+  display: flex;
+  margin-top: var(--nav-h);
+}
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: var(--sidebar-w);
+  min-height: calc(100vh - var(--nav-h));
+  position: fixed;
+  top: var(--nav-h);
+  left: 0;
+  background: var(--bg);
+  padding: 12px 0;
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+  z-index: 100;
+}
+
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 16px;
+  cursor: pointer;
+  border-radius: 6px;
+  margin: 0 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text2);
+  transition: background 0.15s, color 0.15s;
+}
+
+.sidebar-item:hover { background: var(--surface2); color: var(--text); }
+.sidebar-item.active { background: var(--surface2); color: var(--text); }
+
+.sidebar-icon { font-size: 18px; width: 22px; text-align: center; }
+
+.sidebar-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 12px 0;
+}
+
+.sidebar-section-title {
+  padding: 6px 20px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+/* ── MAIN CONTENT ── */
+.main {
+  margin-left: var(--sidebar-w);
+  padding: 24px;
+  flex: 1;
+  min-width: 0;
+}
+
+/* Category chips */
+.chips {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 12px;
+  margin-bottom: 20px;
+  scrollbar-width: none;
+}
+
+.chips::-webkit-scrollbar { display: none; }
+
+.chip {
+  padding: 6px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 40px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text2);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
   user-select: none;
 }
-.fbtn:hover { border-color: #555; color: #ccc; }
-.fbtn.active { background: #fff; border-color: #fff; color: #000; }
 
-/* Subject badge */
-.badge {
-  display: inline-block;
-  padding: 2px 9px;
-  border-radius: 100px;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: .05em;
-  text-transform: uppercase;
-  border: 1px solid var(--border2);
-  color: var(--sub);
-}
+.chip:hover { background: var(--surface2); color: var(--text); }
+.chip.active { background: var(--text); color: var(--bg); border-color: var(--text); }
 
 /* Grid */
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(230px,1fr));
-  gap: 14px;
-  margin-bottom: 60px;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px 12px;
 }
-@media(max-width:380px){ .grid { grid-template-columns: 1fr; } }
 
-/* Hw card */
-.hw-card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--r);
+/* Post Card */
+.card {
+  cursor: pointer;
+  border-radius: var(--radius);
   overflow: hidden;
-  transition: border-color .2s, transform .2s;
-  animation: up .35s ease both;
+  transition: transform 0.15s;
 }
-.hw-card:hover { border-color: #333; transform: translateY(-2px); }
-@keyframes up { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+
+.card:hover { transform: translateY(-2px); }
+.card:hover .card-thumb { box-shadow: 0 4px 20px rgba(0,0,0,0.6); }
 
 .card-thumb {
-  width: 100%; height: 130px;
-  background: #0d0d0d;
-  display: flex; align-items: center; justify-content: center;
+  width: 100%;
+  aspect-ratio: 16/9;
+  background: var(--surface);
+  border-radius: var(--radius);
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: box-shadow 0.2s;
+}
+
+.card-thumb-preview {
+  width: 100%;
+  height: 100%;
+  border: none;
+  pointer-events: none;
+  transform-origin: top left;
   overflow: hidden;
 }
-.card-thumb img { width:100%; height:100%; object-fit:cover; display:block; }
-.card-thumb .ficon { font-size: 2.4rem; opacity: .35; }
 
-.card-body { padding: 14px; }
+.card-thumb-icon {
+  font-size: 40px;
+  opacity: 0.25;
+}
 
-.ct { /* card title */
-  font-size: 13px;
+.card-type-badge {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background: rgba(0,0,0,0.75);
+  color: white;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 3px;
+  backdrop-filter: blur(4px);
+}
+
+.card-info {
+  padding: 10px 4px 4px;
+  display: flex;
+  gap: 10px;
+}
+
+.card-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
   font-weight: 700;
-  color: #fff;
-  margin-bottom: 10px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  color: var(--accent);
+  flex-shrink: 0;
+  text-transform: uppercase;
 }
-.cm { /* card meta */
+
+.card-meta {
+  flex: 1;
+  min-width: 0;
+}
+
+.card-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.3;
+  margin-bottom: 3px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.card-author {
+  font-size: 12px;
+  color: var(--text2);
+  margin-bottom: 2px;
+}
+
+.card-time {
+  font-size: 12px;
+  color: var(--text3);
+}
+
+/* Empty / Loading */
+.state-msg {
+  grid-column: 1/-1;
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text3);
+}
+
+.state-msg .ico { font-size: 52px; margin-bottom: 12px; opacity: 0.4; }
+.state-msg p { font-size: 15px; }
+
+.spinner-wrap {
+  grid-column: 1/-1;
+  display: flex;
+  justify-content: center;
+  padding: 60px;
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.75s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── VIEWER MODAL ── */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  z-index: 300;
+  display: none;
+  align-items: flex-start;
+  justify-content: center;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+.overlay.open { display: flex; }
+
+.viewer {
+  background: var(--surface);
+  border-radius: 10px;
+  width: 100%;
+  max-width: 900px;
+  margin: auto;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.viewer-topbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 12px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
 }
-.cdate { font-size: 11px; color: var(--muted); }
 
-.btn-view {
-  display: block;
+.viewer-title {
+  font-size: 15px;
+  font-weight: 600;
+  flex: 1;
+  margin-right: 12px;
+}
+
+.viewer-close {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+  flex-shrink: 0;
+}
+
+.viewer-close:hover { background: var(--border); }
+
+.viewer-frame-wrap {
   width: 100%;
-  padding: 9px;
-  text-align: center;
-  border: 1px solid var(--border2);
-  border-radius: var(--rsm);
-  color: var(--sub);
-  font-family: 'Inter', sans-serif;
+  aspect-ratio: 16/9;
+  background: #000;
+  position: relative;
+}
+
+.viewer-frame-wrap iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+
+.viewer-text-only {
+  padding: 40px 32px;
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--text);
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  min-height: 200px;
+}
+
+.viewer-meta {
+  padding: 20px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.viewer-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--accent);
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+.viewer-author { font-size: 14px; font-weight: 600; }
+.viewer-date { font-size: 12px; color: var(--text3); margin-top: 2px; }
+
+.viewer-body { padding: 0 20px 20px; }
+.viewer-body-text {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text2);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* ── UPLOAD MODAL ── */
+.upload-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  z-index: 400;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.upload-overlay.open { display: flex; }
+
+.upload-modal {
+  background: var(--surface);
+  border-radius: 10px;
+  width: 100%;
+  max-width: 520px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.upload-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.upload-header h2 { font-size: 16px; font-weight: 600; }
+
+.upload-body { padding: 24px 20px; display: flex; flex-direction: column; gap: 16px; }
+
+.field label {
+  display: block;
   font-size: 12px;
   font-weight: 600;
-  text-decoration: none;
-  transition: background .15s, color .15s, border-color .15s;
-  -webkit-tap-highlight-color: transparent;
-  user-select: none;
+  color: var(--text2);
+  margin-bottom: 7px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
-.btn-view:hover { background: #fff; color: #000; border-color: #fff; }
-.btn-view:active { opacity: .7; }
 
-/* Empty / loading */
-.empty {
+.field input, .field textarea {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 14px;
+  color: var(--text);
+  font-family: inherit;
+  transition: border-color 0.2s;
+}
+
+.field input:focus, .field textarea:focus { border-color: var(--accent); }
+.field input::placeholder, .field textarea::placeholder { color: var(--text3); }
+.field textarea { resize: vertical; min-height: 90px; }
+
+.dropzone {
+  border: 2px dashed var(--border);
+  border-radius: 8px;
+  padding: 30px 20px;
   text-align: center;
-  padding: 60px 20px;
-  grid-column: 1/-1;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  color: var(--text2);
 }
-.empty .eicon { font-size: 2.4rem; opacity: .2; margin-bottom: 12px; }
-.empty p { color: var(--muted); font-size: 13px; }
 
-.spin {
-  width: 32px; height: 32px;
-  border: 2px solid var(--border2);
-  border-top-color: #666;
-  border-radius: 50%;
-  animation: rot .7s linear infinite;
-  margin: 0 auto 12px;
+.dropzone:hover, .dropzone.drag { border-color: var(--accent); background: rgba(62,166,255,0.05); }
+
+.dropzone .dz-icon { font-size: 36px; margin-bottom: 10px; opacity: 0.6; }
+.dropzone .dz-label { font-size: 14px; font-weight: 500; margin-bottom: 4px; }
+.dropzone .dz-sub { font-size: 12px; color: var(--text3); }
+
+.dz-selected {
+  border-color: var(--accent);
+  background: rgba(62,166,255,0.05);
+  color: var(--accent);
 }
-@keyframes rot { to{transform:rotate(360deg)} }
 
-/* ─────────────────────────────────────────
-   DIVIDER
-───────────────────────────────────────── */
-.divider {
+.dz-selected .dz-icon { opacity: 1; }
+
+.upload-footer {
+  padding: 16px 20px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.btn {
+  padding: 9px 20px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
   border: none;
-  border-top: 1px solid var(--border);
-  margin: 0 0 40px;
+  transition: all 0.15s;
+  font-family: inherit;
 }
 
-/* ─────────────────────────────────────────
-   FOOTER
-───────────────────────────────────────── */
-footer {
-  text-align: center;
-  padding: 24px 16px;
-  font-size: 12px;
-  color: var(--muted);
-  border-top: 1px solid var(--border);
+.btn-ghost {
+  background: transparent;
+  color: var(--text2);
+  border: 1px solid var(--border);
 }
-footer a { color: var(--sub); text-decoration: none; }
 
-/* Scrollbar */
-::-webkit-scrollbar { width: 5px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #222; border-radius: 3px; }
+.btn-ghost:hover { background: var(--surface2); color: var(--text); }
 
+.btn-primary {
+  background: var(--accent);
+  color: #000;
+}
+
+.btn-primary:hover { background: var(--accent-hover); }
+.btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* Toast */
+.toast-wrap {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+.toast {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 12px 18px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  animation: toastIn 0.25s ease-out;
+  max-width: 280px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+}
+
+.toast.ok { border-left: 3px solid #3ecf8e; }
+.toast.err { border-left: 3px solid var(--red); }
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Progress bar */
+.progress-bar {
+  height: 3px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: var(--accent);
+  width: 0%;
+  transition: width 0.3s;
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+  .sidebar { display: none; }
+  .main { margin-left: 0; padding: 12px; }
+  .topbar-search { display: none; }
+  .grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
+  .viewer-text-only { padding: 20px; }
+}
 </style>
 </head>
 <body>
 
-<!-- SETUP BANNER -->
-<div id="setupBanner">
-  <p><strong>First-time setup needed.</strong> Tap below to auto-create the storage bucket and database table.</p>
-  <button class="btn-setup" id="setupBtn" onclick="runAutoSetup()">Auto-Setup</button>
-  <div class="setup-log" id="setupLog"></div>
+<!-- TOPBAR -->
+<div class="topbar">
+  <a class="topbar-logo" href="#"><span>▶</span>PostHub</a>
+  <div class="topbar-search">
+    <input type="text" id="searchInput" placeholder="Search posts…" oninput="handleSearch()">
+    <button>🔍</button>
+  </div>
+  <div class="topbar-actions">
+    <button class="btn-upload-top" onclick="openUpload()">
+      + Create
+    </button>
+  </div>
 </div>
 
-<div class="wrap">
+<!-- LAYOUT -->
+<div class="layout">
 
-  <!-- HEADER -->
-  <header>
-    <div class="pill"><span class="dot"></span> Free &amp; Open</div>
-    <h1>Homework Hub</h1>
-    <p>Upload and share study materials with your class — no account needed.</p>
-  </header>
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-item active" onclick="setFilter('all', this)">
+      <span class="sidebar-icon">🏠</span> Home
+    </div>
+    <div class="sidebar-item" onclick="setFilter('html', this)">
+      <span class="sidebar-icon">🌐</span> HTML Posts
+    </div>
+    <div class="sidebar-item" onclick="setFilter('text', this)">
+      <span class="sidebar-icon">📝</span> Text Posts
+    </div>
+    <div class="sidebar-divider"></div>
+    <div class="sidebar-section-title">Browse</div>
+    <div class="sidebar-item" onclick="openUpload()">
+      <span class="sidebar-icon">＋</span> Upload
+    </div>
+    <div class="sidebar-item" onclick="loadPosts(true)">
+      <span class="sidebar-icon">↺</span> Refresh
+    </div>
+  </aside>
 
-  <!-- UPLOAD CARD -->
-  <div class="card">
-    <div class="card-heading">Upload Homework</div>
-
-    <div class="dropzone" id="dropZone">
-      <input type="file" id="fileInput" accept="*/*"/>
-      <span class="dz-icon">📎</span>
-      <strong>Drop a file here</strong>
-      <span>or tap to browse · max 10 MB</span>
-      <div class="file-picked" id="selectedFileName"></div>
+  <!-- MAIN -->
+  <main class="main">
+    <!-- Chips -->
+    <div class="chips" id="chips">
+      <div class="chip active" onclick="chipFilter('all', this)">All</div>
+      <div class="chip" onclick="chipFilter('html', this)">HTML Files</div>
+      <div class="chip" onclick="chipFilter('text', this)">Text Only</div>
     </div>
 
-    <div class="form-row">
-      <div class="fg">
-        <label for="hwTitle">Title</label>
-        <input type="text" id="hwTitle" placeholder="e.g. Chapter 5 Notes" maxlength="80"/>
-      </div>
-      <div class="fg">
-        <label for="hwSubject">Subject</label>
-        <select id="hwSubject">
-          <option value="">Choose subject…</option>
-          <!-- Sciences -->
-          <option value="Physics">Physics</option>
-          <option value="Chemistry">Chemistry</option>
-          <option value="Biology">Biology</option>
-          <option value="Environmental Science">Environmental Science</option>
-          <option value="Astronomy">Astronomy</option>
-          <!-- Maths -->
-          <option value="Math">Math</option>
-          <option value="Statistics">Statistics</option>
-          <option value="Calculus">Calculus</option>
-          <!-- Languages -->
-          <option value="English">English</option>
-          <option value="Urdu">Urdu</option>
-          <option value="Arabic">Arabic</option>
-          <option value="French">French</option>
-          <!-- Humanities -->
-          <option value="History">History</option>
-          <option value="Geography">Geography</option>
-          <option value="Civics">Civics</option>
-          <option value="Economics">Economics</option>
-          <option value="Islamic Studies">Islamic Studies</option>
-          <!-- Technology -->
-          <option value="Computer Science">Computer Science</option>
-          <option value="ICT">ICT</option>
-          <!-- Arts -->
-          <option value="Art">Art</option>
-          <option value="Music">Music</option>
-          <!-- Health -->
-          <option value="Physical Education">Physical Education</option>
-          <option value="Health">Health</option>
-          <option value="Other">Other</option>
-        </select>
+    <!-- Grid -->
+    <div class="grid" id="grid">
+      <div class="spinner-wrap"><div class="spinner"></div></div>
+    </div>
+  </main>
+</div>
+
+<!-- VIEWER OVERLAY -->
+<div class="overlay" id="viewerOverlay" onclick="overlayClickClose(event, 'viewerOverlay')">
+  <div class="viewer" id="viewer">
+    <div class="viewer-topbar">
+      <div class="viewer-title" id="viewerTitle">–</div>
+      <button class="viewer-close" onclick="closeViewer()">✕</button>
+    </div>
+    <div id="viewerContent"></div>
+    <div class="viewer-meta">
+      <div class="viewer-avatar" id="viewerAvatar">?</div>
+      <div>
+        <div class="viewer-author" id="viewerAuthor">–</div>
+        <div class="viewer-date" id="viewerDate">–</div>
       </div>
     </div>
+    <div class="viewer-body" id="viewerBody"></div>
+  </div>
+</div>
 
-    <button class="btn-primary" id="uploadBtn" onclick="handleUpload()">Upload</button>
-
-    <div class="prog-wrap" id="progWrap">
-      <div class="prog-track"><div class="prog-fill" id="progFill"></div></div>
-      <div class="prog-label" id="progLabel">Uploading…</div>
+<!-- UPLOAD OVERLAY -->
+<div class="upload-overlay" id="uploadOverlay" onclick="overlayClickClose(event, 'uploadOverlay')">
+  <div class="upload-modal">
+    <div class="upload-header">
+      <h2>Create Post</h2>
+      <button class="viewer-close" onclick="closeUpload()">✕</button>
     </div>
-
-    <div class="alert ok"  id="alertOk">✓ Uploaded! Your homework is now live.</div>
-    <div class="alert err" id="alertErr">✕ <span id="errMsg">Something went wrong.</span></div>
+    <div class="upload-body">
+      <div class="field">
+        <label>Your Name</label>
+        <input type="text" id="inputName" placeholder="e.g. Momin" maxlength="30">
+      </div>
+      <div class="field">
+        <label>Post Title</label>
+        <input type="text" id="inputTitle" placeholder="Give your post a title…" maxlength="80">
+      </div>
+      <div class="field">
+        <label>Description</label>
+        <textarea id="inputDesc" placeholder="What's this about? (optional)" maxlength="500"></textarea>
+      </div>
+      <div class="field">
+        <label>HTML File <span style="color:var(--text3);font-weight:400;text-transform:none">(optional)</span></label>
+        <div class="dropzone" id="dropzone" onclick="document.getElementById('fileInput').click()"
+             ondragover="dzDragOver(event)" ondragleave="dzDragLeave()" ondrop="dzDrop(event)">
+          <div class="dz-icon">📁</div>
+          <div class="dz-label">Drop HTML file or click to browse</div>
+          <div class="dz-sub">Only .html files, max 5 MB</div>
+          <div class="progress-bar" id="dzProgress" style="display:none;">
+            <div class="progress-bar-fill" id="dzFill"></div>
+          </div>
+        </div>
+        <input type="file" id="fileInput" accept=".html" style="display:none" onchange="fileChosen(event)">
+      </div>
+    </div>
+    <div class="upload-footer">
+      <button class="btn btn-ghost" onclick="closeUpload()">Cancel</button>
+      <button class="btn btn-primary" id="publishBtn" onclick="publishPost()">Publish</button>
+    </div>
   </div>
+</div>
 
-  <hr class="divider"/>
-
-  <!-- GALLERY -->
-  <div class="gallery-head">
-    <div class="gallery-title">Browse Uploads</div>
-  </div>
-
-  <!-- Filters — scrollable row -->
-  <div class="filters" id="filters" style="margin-bottom:20px;">
-    <button class="fbtn active" onclick="setFilter('all',this)">All</button>
-    <button class="fbtn" onclick="setFilter('Physics',this)">Physics</button>
-    <button class="fbtn" onclick="setFilter('Chemistry',this)">Chemistry</button>
-    <button class="fbtn" onclick="setFilter('Biology',this)">Biology</button>
-    <button class="fbtn" onclick="setFilter('Math',this)">Math</button>
-    <button class="fbtn" onclick="setFilter('English',this)">English</button>
-    <button class="fbtn" onclick="setFilter('Urdu',this)">Urdu</button>
-    <button class="fbtn" onclick="setFilter('Arabic',this)">Arabic</button>
-    <button class="fbtn" onclick="setFilter('History',this)">History</button>
-    <button class="fbtn" onclick="setFilter('Geography',this)">Geography</button>
-    <button class="fbtn" onclick="setFilter('Economics',this)">Economics</button>
-    <button class="fbtn" onclick="setFilter('Islamic Studies',this)">Islamic Studies</button>
-    <button class="fbtn" onclick="setFilter('Computer Science',this)">Computer Science</button>
-    <button class="fbtn" onclick="setFilter('ICT',this)">ICT</button>
-    <button class="fbtn" onclick="setFilter('Statistics',this)">Statistics</button>
-    <button class="fbtn" onclick="setFilter('Calculus',this)">Calculus</button>
-    <button class="fbtn" onclick="setFilter('Environmental Science',this)">Env. Science</button>
-    <button class="fbtn" onclick="setFilter('Art',this)">Art</button>
-    <button class="fbtn" onclick="setFilter('Music',this)">Music</button>
-    <button class="fbtn" onclick="setFilter('Physical Education',this)">P.E.</button>
-    <button class="fbtn" onclick="setFilter('Other',this)">Other</button>
-  </div>
-
-  <div class="grid" id="grid">
-    <div class="empty"><div class="spin"></div><p>Loading…</p></div>
-  </div>
-
-</div><!-- /wrap -->
-
-<footer>
-  Homework Hub · Powered by <a href="https://supabase.com" target="_blank">Supabase</a> &amp; <a href="https://netlify.com" target="_blank">Netlify</a>
-</footer>
+<!-- TOAST CONTAINER -->
+<div class="toast-wrap" id="toastWrap"></div>
 
 <script>
-/* ─────────────────────────────────────
-   CONFIG
-───────────────────────────────────── */
-const SUPABASE_URL  = "https://nzolsmouyulzqeaocejm.supabase.co";
-const SUPABASE_KEY  = "sb_publishable_EGX3jDjRh5LiXjdTw2AXxA_e1YIaP4Q";
-const BUCKET        = "homework-files";
-const TABLE         = "homework";
-const MAX_MB        = 10;
+const SB_URL = 'https://nzolsmouyulzqeaocejm.supabase.co';
+const SB_KEY = 'sb_publishable_EGX3jDjRh5LiXjdTw2AXxA_e1YIaP4Q';
+const BUCKET  = 'homework-files';
+const TABLE   = 'homework';
 
-/* ─────────────────────────────────────
-   INIT
-───────────────────────────────────── */
-const { createClient } = supabase;
-const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+let allPosts = [];
+let activeFilter = 'all';
+let searchQuery  = '';
+let selectedFile = null;
 
-let file       = null;
-let all        = [];
-let filter     = 'all';
-
-/* ─────────────────────────────────────
-   AUTO SETUP
-───────────────────────────────────── */
-function log(msg, cls='') {
-  const el = document.getElementById('setupLog');
-  const d = document.createElement('div');
-  d.className = cls; d.textContent = msg;
-  el.appendChild(d);
-  el.scrollTop = el.scrollHeight;
-}
-
-async function runAutoSetup() {
-  const btn = document.getElementById('setupBtn');
-  btn.disabled = true; btn.textContent = 'Setting up…';
-  document.getElementById('setupLog').innerHTML = '';
-  let ok = true;
-
-  // Bucket
-  log('Creating storage bucket…');
-  try {
-    const { data: list } = await sb.storage.listBuckets();
-    if (list && list.some(b => b.name === BUCKET)) {
-      log('✓ Bucket already exists.', 'ok');
-    } else {
-      const { error } = await sb.storage.createBucket(BUCKET, { public: true });
-      if (error && !error.message.toLowerCase().includes('already')) {
-        log('✗ Bucket: ' + error.message, 'err'); ok = false;
-      } else {
-        log('✓ Bucket created.', 'ok');
-      }
-    }
-  } catch(e) { log('✗ ' + e.message, 'err'); ok = false; }
-
-  // Table check
-  log('Checking database table…');
-  try {
-    const { error } = await sb.from(TABLE).select('id').limit(1);
-    if (!error) {
-      log('✓ Table exists.', 'ok');
-    } else if (error.code === '42P01' || error.message.includes('does not exist')) {
-      log('Table missing. Please run this in Supabase → SQL Editor:', 'err');
-      log('CREATE TABLE homework (id bigserial PRIMARY KEY, title text, subject text, file_url text, created_at timestamptz DEFAULT now());', 'err');
-      log('Then add RLS policies: SELECT and INSERT with USING (true).', 'err');
-      ok = false;
-    }
-  } catch(e) { log('✗ ' + e.message, 'err'); ok = false; }
-
-  if (ok) {
-    log('✓ All done! Loading…', 'ok');
-    setTimeout(() => {
-      document.getElementById('setupBanner').style.display = 'none';
-      loadAll();
-    }, 1000);
-  } else {
-    btn.disabled = false; btn.textContent = 'Retry Setup';
-    loadAll();
-  }
-}
-
-async function checkSetup() {
-  try {
-    const { error } = await sb.from(TABLE).select('id').limit(1);
-    if (error && (error.code === '42P01' || error.message.includes('does not exist'))) {
-      document.getElementById('setupBanner').style.display = 'block';
-    }
-  } catch(_) {}
-}
-
-/* ─────────────────────────────────────
-   DRAG & DROP
-───────────────────────────────────── */
-const dz = document.getElementById('dropZone');
-const fi = document.getElementById('fileInput');
-
-dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('over'); });
-dz.addEventListener('dragleave', () => dz.classList.remove('over'));
-dz.addEventListener('drop', e => {
-  e.preventDefault(); dz.classList.remove('over');
-  if (e.dataTransfer.files[0]) pickFile(e.dataTransfer.files[0]);
+// ── INIT ──────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  loadPosts();
+  setInterval(loadPosts, 8000);
 });
-fi.addEventListener('change', () => { if (fi.files[0]) pickFile(fi.files[0]); });
 
-function pickFile(f) {
-  if (f.size > MAX_MB * 1024 * 1024) {
-    return showErr(`File too large. Max ${MAX_MB} MB.`);
+// ── LOAD POSTS ────────────────────────
+async function loadPosts(showSpinner = false) {
+  if (showSpinner) {
+    document.getElementById('grid').innerHTML = '<div class="spinner-wrap"><div class="spinner"></div></div>';
   }
-  file = f;
-  document.getElementById('selectedFileName').textContent = '📄 ' + f.name;
-  hideAlerts();
-}
-
-/* ─────────────────────────────────────
-   UPLOAD
-───────────────────────────────────── */
-async function handleUpload() {
-  hideAlerts();
-  const title   = document.getElementById('hwTitle').value.trim();
-  const subject = document.getElementById('hwSubject').value;
-
-  if (!title)   return showErr('Please enter a title.');
-  if (!subject) return showErr('Please choose a subject.');
-  if (!file)    return showErr('Please select a file.');
-
-  setBusy(true);
-
   try {
-    const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-    const fname    = Date.now() + '_' + safeName;
-
-    setP(25, 'Uploading file…');
-    const { error: se } = await sb.storage.from(BUCKET).upload(fname, file, { upsert: false });
-    if (se) {
-      if (se.message.includes('Bucket') || se.message.includes('bucket'))
-        throw new Error('Bucket not found. Tap Auto-Setup at the top.');
-      if (se.message.includes('policy') || se.message.includes('security'))
-        throw new Error('Storage permission denied. Set the bucket to Public in Supabase.');
-      throw new Error('Upload failed: ' + se.message);
+    const r = await fetch(`${SB_URL}/rest/v1/${TABLE}?order=created_at.desc`, {
+      headers: { apikey: SB_KEY }
+    });
+    if (!r.ok) throw new Error();
+    allPosts = await r.json();
+    renderGrid();
+  } catch {
+    if (allPosts.length === 0) {
+      document.getElementById('grid').innerHTML = `
+        <div class="state-msg"><div class="ico">📭</div><p>No posts yet — be the first to publish!</p></div>`;
     }
-
-    setP(65, 'Saving record…');
-    const { data: u } = sb.storage.from(BUCKET).getPublicUrl(fname);
-    const { error: de } = await sb.from(TABLE).insert({ title, subject, file_url: u.publicUrl });
-    if (de) {
-      if (de.code === '42P01' || de.message.includes('does not exist'))
-        throw new Error('Table not found. Tap Auto-Setup at the top.');
-      if (de.code === '42501' || de.message.includes('policy'))
-        throw new Error('DB permission denied. Add an INSERT policy in Supabase.');
-      throw new Error('DB error: ' + de.message);
-    }
-
-    setP(100, 'Done!');
-    setTimeout(() => {
-      setBusy(false);
-      document.getElementById('alertOk').classList.add('on');
-      resetForm();
-      loadAll();
-    }, 400);
-
-  } catch(e) {
-    setBusy(false);
-    showErr(e.message);
   }
 }
 
-/* ─────────────────────────────────────
-   LOAD GALLERY
-───────────────────────────────────── */
-async function loadAll() {
-  const g = document.getElementById('grid');
-  g.innerHTML = '<div class="empty"><div class="spin"></div><p>Loading…</p></div>';
+// ── RENDER GRID ───────────────────────
+function renderGrid() {
+  let posts = allPosts;
 
-  try {
-    const { data, error } = await sb.from(TABLE).select('*').order('created_at', { ascending: false });
-    if (error) {
-      if (error.code === '42P01' || error.message.includes('does not exist')) {
-        g.innerHTML = '<div class="empty"><div class="eicon">⚙️</div><p>Table not found — use Auto-Setup at the top.</p></div>';
-        document.getElementById('setupBanner').style.display = 'block';
-        return;
-      }
-      g.innerHTML = `<div class="empty"><div class="eicon">⚠️</div><p>${esc(error.message)}</p></div>`;
-      return;
-    }
-    all = data || [];
-    render();
-  } catch(e) {
-    g.innerHTML = '<div class="empty"><div class="eicon">⚠️</div><p>Could not connect.</p></div>';
+  if (activeFilter === 'html') posts = posts.filter(p => p.file_url);
+  if (activeFilter === 'text') posts = posts.filter(p => !p.file_url);
+
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase();
+    posts = posts.filter(p =>
+      (p.title||'').toLowerCase().includes(q) ||
+      (p.subject||'').toLowerCase().includes(q)
+    );
   }
-}
 
-function render() {
-  const g    = document.getElementById('grid');
-  const list = filter === 'all' ? all : all.filter(h => h.subject === filter);
+  const grid = document.getElementById('grid');
 
-  if (!list.length) {
-    g.innerHTML = `<div class="empty"><div class="eicon">📭</div><p>No uploads${filter !== 'all' ? ' for ' + filter : ''} yet.</p></div>`;
+  if (posts.length === 0) {
+    grid.innerHTML = `<div class="state-msg"><div class="ico">🔍</div><p>Nothing to show here.</p></div>`;
     return;
   }
 
-  g.innerHTML = list.map((h, i) => {
-    const isImg = /\.(jpe?g|png|gif|webp|svg|bmp)$/i.test(h.file_url || '');
-    const date  = h.created_at
-      ? new Date(h.created_at).toLocaleDateString(undefined, { day:'numeric', month:'short', year:'numeric' })
-      : '';
-    return `<div class="hw-card" style="animation-delay:${i*.04}s">
+  grid.innerHTML = posts.map(p => cardHTML(p)).join('');
+}
+
+function cardHTML(p) {
+  const author = (p.title || 'Anonymous').split(' ')[0];
+  const initial = author[0].toUpperCase();
+  const subjectPreview = (p.subject || '').slice(0, 80);
+  const hasFile = !!p.file_url;
+  const timeStr = timeAgo(p.created_at);
+
+  const thumb = hasFile
+    ? `<iframe class="card-thumb-preview" src="${p.file_url}" sandbox="allow-scripts allow-same-origin" scrolling="no"></iframe>`
+    : `<div class="card-thumb-icon">📝</div>`;
+
+  return `
+    <div class="card" onclick='openViewer(${JSON.stringify(p)})'>
       <div class="card-thumb">
-        ${isImg
-          ? `<img src="${esc(h.file_url)}" alt="${esc(h.title)}" loading="lazy" onerror="this.parentNode.innerHTML='<span class=\\'ficon\\'>📄</span>'"/>`
-          : `<span class="ficon">${ficon(h.file_url)}</span>`}
+        ${thumb}
+        <div class="card-type-badge">${hasFile ? 'HTML' : 'POST'}</div>
       </div>
-      <div class="card-body">
-        <div class="ct" title="${esc(h.title)}">${esc(h.title)}</div>
-        <div class="cm">
-          <span class="badge">${esc(h.subject)}</span>
-          <span class="cdate">${date}</span>
+      <div class="card-info">
+        <div class="card-avatar">${initial}</div>
+        <div class="card-meta">
+          <div class="card-title">${esc(p.subject || p.title || 'Untitled')}</div>
+          <div class="card-author">${esc(p.title || 'Anonymous')}</div>
+          <div class="card-time">${timeStr}</div>
         </div>
-        <a href="${esc(h.file_url)}" target="_blank" rel="noopener noreferrer" class="btn-view">Open →</a>
       </div>
     </div>`;
-  }).join('');
 }
 
-/* ─────────────────────────────────────
-   FILTER
-───────────────────────────────────── */
-function setFilter(val, btn) {
-  filter = val;
-  document.querySelectorAll('.fbtn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  render();
+// ── VIEWER ────────────────────────────
+function openViewer(p) {
+  const author = p.title || 'Anonymous';
+  document.getElementById('viewerTitle').textContent  = p.subject || p.title || 'Post';
+  document.getElementById('viewerAvatar').textContent = author[0].toUpperCase();
+  document.getElementById('viewerAuthor').textContent = author;
+  document.getElementById('viewerDate').textContent   = new Date(p.created_at).toLocaleString();
+
+  const content = document.getElementById('viewerContent');
+  if (p.file_url) {
+    content.innerHTML = `
+      <div class="viewer-frame-wrap">
+        <iframe src="${p.file_url}" sandbox="allow-scripts allow-same-origin allow-forms"></iframe>
+      </div>`;
+  } else {
+    content.innerHTML = `<div class="viewer-text-only">${esc(p.subject || '')}</div>`;
+  }
+
+  const bodyEl = document.getElementById('viewerBody');
+  if (p.file_url && p.subject) {
+    bodyEl.innerHTML = `<div class="viewer-body-text">${esc(p.subject)}</div>`;
+  } else {
+    bodyEl.innerHTML = '';
+  }
+
+  document.getElementById('viewerOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
 }
 
-/* ─────────────────────────────────────
-   HELPERS
-───────────────────────────────────── */
-function showErr(msg) {
-  hideAlerts();
-  document.getElementById('errMsg').textContent = msg;
-  document.getElementById('alertErr').classList.add('on');
-}
-function hideAlerts() {
-  document.getElementById('alertOk').classList.remove('on');
-  document.getElementById('alertErr').classList.remove('on');
+function closeViewer() {
+  document.getElementById('viewerOverlay').classList.remove('open');
+  document.getElementById('viewerContent').innerHTML = '';
+  document.body.style.overflow = '';
 }
 
-function setBusy(on) {
-  const b = document.getElementById('uploadBtn');
-  const p = document.getElementById('progWrap');
-  b.disabled = on;
-  b.textContent = on ? 'Uploading…' : 'Upload';
-  on ? p.classList.add('on') : p.classList.remove('on');
-  if (!on) document.getElementById('progFill').style.width = '0%';
-}
-function setP(pct, lbl) {
-  document.getElementById('progFill').style.width = pct + '%';
-  document.getElementById('progLabel').textContent = lbl;
+// ── UPLOAD MODAL ──────────────────────
+function openUpload()  { document.getElementById('uploadOverlay').classList.add('open'); document.body.style.overflow = 'hidden'; }
+function closeUpload() {
+  document.getElementById('uploadOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+  resetUploadForm();
 }
 
-function resetForm() {
-  file = null;
-  document.getElementById('hwTitle').value = '';
-  document.getElementById('hwSubject').value = '';
-  document.getElementById('selectedFileName').textContent = '';
-  fi.value = '';
+function resetUploadForm() {
+  document.getElementById('inputName').value  = '';
+  document.getElementById('inputTitle').value = '';
+  document.getElementById('inputDesc').value  = '';
+  document.getElementById('fileInput').value  = '';
+  selectedFile = null;
+  const dz = document.getElementById('dropzone');
+  dz.className = 'dropzone';
+  dz.querySelector('.dz-icon').textContent  = '📁';
+  dz.querySelector('.dz-label').textContent = 'Drop HTML file or click to browse';
+  dz.querySelector('.dz-sub').textContent   = 'Only .html files, max 5 MB';
+  document.getElementById('dzProgress').style.display = 'none';
+}
+
+// ── DROPZONE ──────────────────────────
+function fileChosen(e) {
+  handleFile(e.target.files[0]);
+}
+
+function dzDragOver(e) {
+  e.preventDefault();
+  document.getElementById('dropzone').classList.add('drag');
+}
+
+function dzDragLeave() {
+  document.getElementById('dropzone').classList.remove('drag');
+}
+
+function dzDrop(e) {
+  e.preventDefault();
+  document.getElementById('dropzone').classList.remove('drag');
+  handleFile(e.dataTransfer.files[0]);
+}
+
+function handleFile(file) {
+  if (!file) return;
+  if (!file.name.endsWith('.html')) { toast('Only .html files are allowed', 'err'); return; }
+  if (file.size > 5 * 1024 * 1024) { toast('File too large (max 5 MB)', 'err'); return; }
+  selectedFile = file;
+  const dz = document.getElementById('dropzone');
+  dz.classList.add('dz-selected');
+  dz.querySelector('.dz-icon').textContent  = '✅';
+  dz.querySelector('.dz-label').textContent = file.name;
+  dz.querySelector('.dz-sub').textContent   = (file.size / 1024).toFixed(1) + ' KB';
+}
+
+// ── PUBLISH ───────────────────────────
+async function publishPost() {
+  const name  = document.getElementById('inputName').value.trim();
+  const title = document.getElementById('inputTitle').value.trim();
+  const desc  = document.getElementById('inputDesc').value.trim();
+
+  if (!name)  { toast('Enter your name', 'err'); return; }
+  if (!title && !desc && !selectedFile) { toast('Add a title, description, or file', 'err'); return; }
+
+  const btn = document.getElementById('publishBtn');
+  btn.disabled = true;
+  btn.textContent = 'Publishing…';
+
+  try {
+    let fileUrl = null;
+
+    if (selectedFile) {
+      fileUrl = await uploadFile(selectedFile);
+    }
+
+    const displayTitle = title || desc.slice(0, 60) || selectedFile?.name || 'Post';
+    const content      = desc || title;
+
+    const r = await fetch(`${SB_URL}/rest/v1/${TABLE}`, {
+      method: 'POST',
+      headers: {
+        apikey: SB_KEY,
+        'Content-Type': 'application/json',
+        Prefer: 'return=minimal'
+      },
+      body: JSON.stringify({
+        title: `${name} — ${displayTitle}`,
+        subject: content,
+        file_url: fileUrl
+      })
+    });
+
+    if (!r.ok) throw new Error();
+
+    toast('Post published!', 'ok');
+    closeUpload();
+    await loadPosts();
+
+  } catch {
+    toast('Failed to publish', 'err');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Publish';
+  }
+}
+
+async function uploadFile(file) {
+  const fileName = `${Date.now()}_${file.name}`;
+
+  // Show progress bar
+  const prog = document.getElementById('dzProgress');
+  const fill = document.getElementById('dzFill');
+  prog.style.display = 'block';
+
+  // Fake progress for UX
+  let pct = 0;
+  const tick = setInterval(() => {
+    pct = Math.min(pct + 8, 85);
+    fill.style.width = pct + '%';
+  }, 120);
+
+  const fd = new FormData();
+  fd.append('file', file);
+
+  const r = await fetch(`${SB_URL}/storage/v1/object/${BUCKET}/${fileName}`, {
+    method: 'POST',
+    headers: {
+      apikey: SB_KEY,
+      Authorization: `Bearer ${SB_KEY}`
+    },
+    body: fd
+  });
+
+  clearInterval(tick);
+  fill.style.width = '100%';
+
+  if (!r.ok) throw new Error('File upload failed');
+
+  return `${SB_URL}/storage/v1/object/public/${BUCKET}/${fileName}`;
+}
+
+// ── FILTERS ───────────────────────────
+function setFilter(f, el) {
+  activeFilter = f;
+  document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+  el.classList.add('active');
+  // sync chips
+  const map = { all: 0, html: 1, text: 2 };
+  document.querySelectorAll('.chip').forEach((c, i) => {
+    c.classList.toggle('active', i === map[f]);
+  });
+  renderGrid();
+}
+
+function chipFilter(f, el) {
+  activeFilter = f;
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderGrid();
+}
+
+function handleSearch() {
+  searchQuery = document.getElementById('searchInput').value.trim();
+  renderGrid();
+}
+
+// ── OVERLAY CLOSE ON BG CLICK ─────────
+function overlayClickClose(e, id) {
+  if (e.target.id === id) {
+    if (id === 'viewerOverlay') closeViewer();
+    else closeUpload();
+  }
+}
+
+// ── HELPERS ───────────────────────────
+function timeAgo(iso) {
+  const d = new Date(iso);
+  const s = Math.floor((Date.now() - d) / 1000);
+  if (s < 60) return 'now';
+  if (s < 3600) return Math.floor(s/60) + 'm ago';
+  if (s < 86400) return Math.floor(s/3600) + 'h ago';
+  if (s < 604800) return Math.floor(s/86400) + 'd ago';
+  return d.toLocaleDateString();
 }
 
 function esc(s) {
-  if (!s) return '';
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
 }
 
-function ficon(url) {
-  const ext = (url || '').split('.').pop().toLowerCase().split('?')[0];
-  return {pdf:'📕',doc:'📝',docx:'📝',ppt:'📊',pptx:'📊',
-          xls:'📗',xlsx:'📗',txt:'📄',zip:'🗜️',rar:'🗜️',
-          mp4:'🎬',mp3:'🎵',wav:'🎵'}[ext] || '📄';
+function toast(msg, type = 'ok') {
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.textContent = (type === 'ok' ? '✓ ' : '✕ ') + msg;
+  document.getElementById('toastWrap').appendChild(el);
+  setTimeout(() => el.remove(), 3500);
 }
-
-/* ─────────────────────────────────────
-   BOOT
-───────────────────────────────────── */
-checkSetup();
-loadAll();
 </script>
 </body>
 </html>
