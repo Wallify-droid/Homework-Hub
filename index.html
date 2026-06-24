@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -371,6 +370,18 @@ body {
 .progress-bar { height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; margin-top: 8px; }
 .progress-bar-fill { height: 100%; background: var(--accent); width: 0%; transition: width 0.3s; }
 
+/* Loading skeleton for cards */
+.card-skeleton {
+  background: linear-gradient(90deg, var(--surface2) 25%, var(--border) 50%, var(--surface2) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: var(--radius);
+}
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
 /* ── BOTTOM NAV & FAB (Mobile Only) ── */
 .bottom-nav { display: none; }
 .fab { display: none; }
@@ -382,7 +393,7 @@ body {
   .main { margin-left: 0; padding: 12px; padding-bottom: 90px; }
   .grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
   
-  .overlay { padding: 10px; } /* Maximize screen space for modals */
+  .overlay { padding: 10px; }
 
   .chat-layout { flex-direction: column; }
   .chat-sidebar { width: 100%; height: 105px; border-right: none; border-bottom: 1px solid var(--border); padding: 10px; display: flex; flex-direction: column; flex-shrink: 0; }
@@ -496,8 +507,11 @@ body {
     <div id="chatContainer" class="chat-container">
       <div class="chat-layout">
         <div class="chat-sidebar">
-           <div class="sidebar-section-title" style="padding-left:0; margin-bottom: 12px;">Active People</div>
-           <div id="peopleList"></div>
+           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+             <div class="sidebar-section-title" style="padding-left:0; margin: 0;">Active People</div>
+             <button onclick="fetchActiveUsers()" style="background: var(--surface2); border: 1px solid var(--border); color: var(--text2); padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px;">↺</button>
+           </div>
+           <div id="peopleList" style="margin-top: 8px;"></div>
         </div>
         <div class="chat-main">
            <div class="chat-messages" id="chatMessages">
@@ -631,22 +645,60 @@ window.chatUserName = null;
 let chatInitialized = false;
 let chatMessages = [];
 let chatUsers = [];
+let presenceChannel = null;
 
 // ── INIT ──────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   loadPosts();
-  setInterval(loadPosts, 15000); 
+  // Increased interval to 30s to reduce load
+  setInterval(loadPosts, 30000); 
+  
+  // Initialize Intersection Observer for lazy loading
+  initLazyLoading();
 });
+
+// ── LAZY LOADING WITH INTERSECTION OBSERVER ──────────────────────────────
+function initLazyLoading() {
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const card = entry.target;
+        const img = card.querySelector('img[data-src]');
+        const iframe = card.querySelector('iframe[data-src]');
+        
+        if (img) {
+          img.src = img.dataset.src;
+          img.removeAttribute('data-src');
+        }
+        
+        if (iframe) {
+          iframe.src = iframe.dataset.src;
+          iframe.removeAttribute('data-src');
+        }
+        
+        observer.unobserve(card);
+      }
+    });
+  }, {
+    rootMargin: '50px 0px',
+    threshold: 0.01
+  });
+  
+  // Store observer globally for use in renderGrid
+  window.lazyLoadObserver = observer;
+}
 
 // ── SUPABASE FETCH (Posts) ──────────────
 async function loadPosts(showSpinner = false) {
   if (showSpinner) {
     document.getElementById('grid').innerHTML = '<div class="spinner-wrap"><div class="spinner"></div></div>';
   }
+  
   try {
+    // Fetch only necessary fields to reduce payload size
     const { data, error } = await supabase
       .from(TABLE)
-      .select('*')
+      .select('id, title, subject, file_url, created_at')
       .order('created_at', { ascending: false });
       
     if (error) throw error;
@@ -654,7 +706,7 @@ async function loadPosts(showSpinner = false) {
     
     if(activeFilter !== 'people') renderGrid();
   } catch (err) {
-    console.error(err);
+    console.error('Error loading posts:', err);
     if (allPosts.length === 0 && activeFilter !== 'people') {
       document.getElementById('grid').innerHTML = `
         <div class="state-msg"><div class="ico">📭</div><p>No posts yet — be the first to publish!</p></div>`;
@@ -682,7 +734,7 @@ function renderGrid() {
       if (activeFilter === 'media' && type === 'media') return true;
       if (activeFilter === 'docs' && type === 'docs') return true;
       if (activeFilter === 'html' && type === 'html') return true;
-      if (activeFilter === 'text' && type === 'text') return true; // fallback
+      if (activeFilter === 'text' && type === 'text') return true;
       return false;
     });
   }
@@ -702,6 +754,13 @@ function renderGrid() {
   }
 
   grid.innerHTML = posts.map(p => cardHTML(p)).join('');
+  
+  // Observe new cards for lazy loading
+  if (window.lazyLoadObserver) {
+    document.querySelectorAll('.card').forEach(card => {
+      window.lazyLoadObserver.observe(card);
+    });
+  }
 }
 
 function cardHTML(p) {
@@ -716,13 +775,18 @@ function cardHTML(p) {
 
   if (hasFile) {
     if (type === 'media') {
-      thumb = `<img src="${p.file_url}" class="card-thumb-preview" style="object-fit:cover;">`;
+      // Use lazy loading for images
+      thumb = `<img data-src="${p.file_url}" class="card-thumb-preview" style="object-fit:cover;" alt="${esc(p.title || 'Image')}">`;
       badge = 'IMAGE';
     } else if (type === 'docs') {
       thumb = `<div class="card-thumb-icon">📄</div>`;
       badge = 'DOC';
     } else if (type === 'html') {
-      thumb = `<iframe class="card-thumb-preview" src="${p.file_url}" sandbox="allow-scripts allow-same-origin" scrolling="no"></iframe>`;
+      // Use lazy loading for iframes - show placeholder first
+      thumb = `
+        <div class="card-thumb-icon" style="position: absolute;">🌐</div>
+        <iframe data-src="${p.file_url}" class="card-thumb-preview" sandbox="allow-scripts allow-same-origin" scrolling="no" style="opacity: 0; transition: opacity 0.3s;" onload="this.style.opacity=1;"></iframe>
+      `;
       badge = 'HTML';
     } else {
       thumb = `<div class="card-thumb-icon">📁</div>`;
@@ -756,24 +820,30 @@ function openViewer(p) {
   document.getElementById('viewerDate').textContent   = new Date(p.created_at).toLocaleString();
 
   const content = document.getElementById('viewerContent');
-  if (p.file_url) {
-    const type = getFileType(p.file_url);
-    if (type === 'media') {
-      content.innerHTML = `<img src="${p.file_url}" style="width:100%; height:auto; display:block; max-height:70vh; object-fit:contain; background:#000;">`;
-    } else if (type === 'html') {
-      // Added class 'html-app' to enable proper app height
-      content.innerHTML = `<div class="viewer-frame-wrap html-app"><iframe src="${p.file_url}" sandbox="allow-scripts allow-same-origin allow-forms allow-popups" scrolling="yes"></iframe></div>`;
+  
+  // Show loading state
+  content.innerHTML = '<div style="height: 300px; display: flex; align-items: center; justify-content: center;"><div class="spinner"></div></div>';
+  
+  // Use setTimeout to allow the loading state to render
+  setTimeout(() => {
+    if (p.file_url) {
+      const type = getFileType(p.file_url);
+      if (type === 'media') {
+        content.innerHTML = `<img src="${p.file_url}" style="width:100%; height:auto; display:block; max-height:70vh; object-fit:contain; background:#000;" alt="${esc(p.title || 'Image')}">`;
+      } else if (type === 'html') {
+        content.innerHTML = `<div class="viewer-frame-wrap html-app"><iframe src="${p.file_url}" sandbox="allow-scripts allow-same-origin allow-forms allow-popups" scrolling="yes"></iframe></div>`;
+      } else {
+        content.innerHTML = `
+          <div style="padding: 80px 20px; text-align: center;">
+            <div style="font-size: 64px; margin-bottom: 20px;">📄</div>
+            <div style="margin-bottom: 24px; color: var(--text2);">Document Preview</div>
+            <a href="${p.file_url}" target="_blank" class="btn btn-primary" style="display:inline-block; text-decoration:none;">Download / Open File</a>
+          </div>`;
+      }
     } else {
-      content.innerHTML = `
-        <div style="padding: 80px 20px; text-align: center;">
-          <div style="font-size: 64px; margin-bottom: 20px;">📄</div>
-          <div style="margin-bottom: 24px; color: var(--text2);">Document Preview</div>
-          <a href="${p.file_url}" target="_blank" class="btn btn-primary" style="display:inline-block; text-decoration:none;">Download / Open File</a>
-        </div>`;
+      content.innerHTML = `<div class="viewer-text-only">${esc(p.subject || '')}</div>`;
     }
-  } else {
-    content.innerHTML = `<div class="viewer-text-only">${esc(p.subject || '')}</div>`;
-  }
+  }, 50);
 
   const bodyEl = document.getElementById('viewerBody');
   if (p.file_url && p.subject) {
@@ -910,6 +980,8 @@ function setFilter(f) {
       // Scroll to bottom when reopening
       const box = document.getElementById('chatMessages');
       box.scrollTop = box.scrollHeight;
+      // Refresh users list when switching to people tab
+      fetchActiveUsers();
     }
   } else {
     document.getElementById('grid').style.display = 'grid';
@@ -949,12 +1021,17 @@ async function initSupabaseChat() {
   try {
     chatUserId = 'usr_' + Math.random().toString(36).substr(2, 9);
     
+    // Show loading state
+    document.getElementById('chatMessages').innerHTML = '<div style="text-align:center; padding:40px; color:var(--text3);">Connecting to chat...</div>';
+    
     // 1. Fetch initial messages
-    const { data: initialMsgs } = await supabase
+    const { data: initialMsgs, error: msgsError } = await supabase
       .from('chat_messages')
       .select('*')
       .order('created_at', { ascending: false })
       .limit(50);
+      
+    if (msgsError) throw msgsError;
       
     if (initialMsgs) {
       chatMessages = initialMsgs.reverse();
@@ -965,50 +1042,112 @@ async function initSupabaseChat() {
     await fetchActiveUsers();
 
     // 3. Subscribe to NEW messages
-    supabase.channel('public:chat_messages')
+    const messageChannel = supabase
+      .channel('public:chat_messages')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' }, payload => {
         chatMessages.push(payload.new);
         renderChatMessages();
       })
-      .subscribe();
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          console.log('Successfully subscribed to messages');
+        } else if (status === 'CHANNEL_ERROR') {
+          console.error('Channel error for messages');
+          toast('Chat connection error', 'err');
+        }
+      });
 
-    // 4. Subscribe to user activity
-    supabase.channel('public:chat_users')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'chat_users' }, payload => {
-        fetchActiveUsers();
+    // 4. Use Supabase Presence for real-time user tracking
+    presenceChannel = supabase.channel('online-users', {
+      config: {
+        presence: {
+          key: chatUserId,
+        },
+      },
+    });
+    
+    presenceChannel
+      .on('presence', { event: 'sync' }, () => {
+        const state = presenceChannel.presenceState();
+        const users = Object.values(state).map(presence => {
+          // Each presence can be an array, take the first one
+          const userData = Array.isArray(presence) ? presence[0] : presence;
+          return userData;
+        });
+        chatUsers = users;
+        renderChatUsers();
       })
-      .subscribe();
+      .subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+          await presenceChannel.track({
+            uid: chatUserId,
+            name: window.chatUserName,
+            online_at: new Date().toISOString()
+          });
+          
+          // Also register in the database for persistence
+          await registerPresence();
+        }
+      });
 
-    await registerPresence();
     chatInitialized = true;
 
   } catch (e) {
-    console.error(e);
-    toast("Failed to connect to chat", "err");
+    console.error('Chat initialization error:', e);
+    document.getElementById('chatMessages').innerHTML = `
+      <div style="text-align:center; padding:40px; color:var(--red);">
+        <div style="font-size: 48px; margin-bottom: 16px;">⚠️</div>
+        <p>Failed to connect to chat</p>
+        <p style="font-size: 12px; margin-top: 8px; color: var(--text3);">${e.message}</p>
+        <button onclick="initSupabaseChat()" style="margin-top: 16px; padding: 8px 16px; background: var(--accent); color: #000; border: none; border-radius: 6px; cursor: pointer;">Retry</button>
+      </div>`;
   }
 }
 
 async function fetchActiveUsers() {
-  const { data } = await supabase
-    .from('chat_users')
-    .select('*')
-    .order('last_active', { ascending: false });
+  try {
+    const { data, error } = await supabase
+      .from('chat_users')
+      .select('*')
+      .order('last_active', { ascending: false });
+      
+    if (error) {
+      console.error('Error fetching users:', error);
+      document.getElementById('peopleList').innerHTML = `
+        <div style="text-align: center; padding: 20px; color: var(--red);">
+          <p style="font-size: 12px;">Error loading users</p>
+          <p style="font-size: 11px; color: var(--text3);">${error.message}</p>
+        </div>`;
+      return;
+    }
     
-  if (data) {
-    chatUsers = data;
-    renderChatUsers();
+    if (data && data.length > 0) {
+      chatUsers = data;
+      renderChatUsers();
+    } else {
+      document.getElementById('peopleList').innerHTML = `
+        <div style="text-align: center; padding: 20px; color: var(--text3);">
+          <p style="font-size: 12px;">No active users yet</p>
+        </div>`;
+    }
+  } catch (err) {
+    console.error('Fetch users error:', err);
   }
 }
 
 async function registerPresence() {
   if (!chatUserId) return;
-  await supabase
-    .from('chat_users')
-    .upsert({
-      uid: chatUserId,
-      name: window.chatUserName,
-      last_active: new Date().toISOString()
-    });
+  try {
+    await supabase
+      .from('chat_users')
+      .upsert({
+        uid: chatUserId,
+        name: window.chatUserName,
+        last_active: new Date().toISOString()
+      });
+  } catch (e) {
+    console.error('Error registering presence:', e);
+  }
 }
 
 function renderChatMessages() {
@@ -1029,7 +1168,17 @@ function renderChatMessages() {
 }
 
 function renderChatUsers() {
-  document.getElementById('peopleList').innerHTML = chatUsers.map(u => `
+  const peopleList = document.getElementById('peopleList');
+  
+  if (!chatUsers || chatUsers.length === 0) {
+    peopleList.innerHTML = `
+      <div style="text-align: center; padding: 20px; color: var(--text3);">
+        <p style="font-size: 12px;">No active users</p>
+      </div>`;
+    return;
+  }
+  
+  peopleList.innerHTML = chatUsers.map(u => `
     <div class="people-item">
       <div class="people-avatar">${esc((u.name || '?').charAt(0))}</div>
       <div style="min-width:0; text-align:left;">
@@ -1041,25 +1190,51 @@ function renderChatUsers() {
 }
 
 window.sendChatMessage = async function() {
-  if (!chatUserId) return;
+  if (!chatUserId) {
+    toast('Please join chat first', 'err');
+    return;
+  }
+  
   const input = document.getElementById('chatInput');
   const text = input.value.trim();
   if (!text) return;
   
   input.value = '';
   
-  // Real-time insert
-  await supabase.from('chat_messages').insert({
-    uid: chatUserId,
-    name: window.chatUserName,
-    text: text
-  });
-  
-  registerPresence();
+  try {
+    // Add optimistic UI update
+    const tempMessage = {
+      uid: chatUserId,
+      name: window.chatUserName,
+      text: text,
+      created_at: new Date().toISOString()
+    };
+    chatMessages.push(tempMessage);
+    renderChatMessages();
+    
+    // Send to database
+    const { error } = await supabase.from('chat_messages').insert({
+      uid: chatUserId,
+      name: window.chatUserName,
+      text: text
+    });
+    
+    if (error) throw error;
+    
+    // Update presence
+    registerPresence();
+  } catch (e) {
+    console.error('Error sending message:', e);
+    // Remove the optimistic message if it failed
+    chatMessages.pop();
+    renderChatMessages();
+    toast('Failed to send message', 'err');
+  }
 }
 
 // ── UTILS ─────────────────────────────
 function timeAgo(iso) {
+  if (!iso) return '';
   const d = new Date(iso);
   const s = Math.floor((Date.now() - d) / 1000);
   if (s < 60) return 'now';
@@ -1070,6 +1245,7 @@ function timeAgo(iso) {
 }
 
 function esc(s) {
+  if (!s) return '';
   const d = document.createElement('div');
   d.textContent = s;
   return d.innerHTML;
@@ -1082,9 +1258,13 @@ function toast(msg, type = 'ok') {
   document.getElementById('toastWrap').appendChild(el);
   setTimeout(() => el.remove(), 3500);
 }
+
+// ── CLEANUP ON PAGE UNLOAD ──────────────────────────────
+window.addEventListener('beforeunload', () => {
+  if (presenceChannel) {
+    presenceChannel.untrack();
+  }
+});
 </script>
 </body>
 </html>
-
-
-```
