@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>p</title>
+<!-- Official Supabase JS SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *, *::before, *::after {
   box-sizing: border-box;
@@ -272,7 +274,7 @@ body {
 
 /* ── CHAT UI ── */
 .chat-container {
-  display: none; /* Hidden by default */
+  display: none;
   height: calc(100vh - var(--nav-h) - 48px);
   background: var(--surface);
   border-radius: var(--radius);
@@ -299,7 +301,7 @@ body {
 .chat-msg.me .chat-msg-bubble { background: var(--accent); color: #000; border-color: var(--accent); border-top-left-radius: 16px; border-top-right-radius: 4px; }
 
 .people-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; }
-.people-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--surface2); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-weight: bold; color: var(--accent); font-size: 12px; }
+.people-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--surface2); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-weight: bold; color: var(--accent); font-size: 12px; text-transform: uppercase; }
 .people-name { font-size: 13px; font-weight: 600; color: var(--text); }
 .people-status { font-size: 11px; color: #3ecf8e; margin-top: 2px;}
 
@@ -459,7 +461,7 @@ body {
       <span class="sidebar-icon">📄</span> Documents
     </div>
     <div class="sidebar-item" data-filter="html" onclick="setFilter('html')">
-      <span class="sidebar-icon">🌐</span> HTML Apps
+      <span class="sidebar-icon">🌐</span> Web Apps
     </div>
     <div class="sidebar-divider"></div>
     <div class="sidebar-item" data-filter="people" onclick="setFilter('people')">
@@ -616,22 +618,12 @@ body {
 <!-- TOAST CONTAINER -->
 <div class="toast-wrap" id="toastWrap"></div>
 
-<!-- FIREBASE INTEGRATION (For Realtime Chat) -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-  import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-  import { getFirestore, collection, onSnapshot, addDoc, setDoc, doc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-  // Expose to window so our inline handlers can access Firebase safely
-  window.fbApp = {
-    initializeApp, getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged,
-    getFirestore, collection, onSnapshot, addDoc, setDoc, doc
-  };
-</script>
-
 <script>
+// Initialize Supabase SDK
 const SB_URL = 'https://nzolsmouyulzqeaocejm.supabase.co';
 const SB_KEY = 'sb_publishable_EGX3jDjRh5LiXjdTw2AXxA_e1YIaP4Q';
+const supabase = window.supabase.createClient(SB_URL, SB_KEY);
+
 const BUCKET  = 'homework-files';
 const TABLE   = 'homework';
 
@@ -640,33 +632,38 @@ let activeFilter = 'all';
 let searchQuery  = '';
 let selectedFile = null;
 
-// Firebase & Chat State
-let fbDb = null;
-let fbAuth = null;
-let fbAppId = null;
-let chatUser = null;
+// Chat State
+let chatUserId = null;
 window.chatUserName = null;
 let chatInitialized = false;
+let chatMessages = [];
+let chatUsers = [];
 
 // ── INIT ──────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   loadPosts();
-  setInterval(loadPosts, 8000);
+  // We no longer need the 8s polling interval for posts because we can fetch fresh when needed,
+  // but we can keep a slow poll just in case users don't refresh manually.
+  setInterval(loadPosts, 15000); 
 });
 
-// ── LOAD POSTS (Supabase) ──────────────
+// ── SUPABASE FETCH (Posts) ──────────────
 async function loadPosts(showSpinner = false) {
   if (showSpinner) {
     document.getElementById('grid').innerHTML = '<div class="spinner-wrap"><div class="spinner"></div></div>';
   }
   try {
-    const r = await fetch(`${SB_URL}/rest/v1/${TABLE}?order=created_at.desc`, {
-      headers: { apikey: SB_KEY }
-    });
-    if (!r.ok) throw new Error();
-    allPosts = await r.json();
+    const { data, error } = await supabase
+      .from(TABLE)
+      .select('*')
+      .order('created_at', { ascending: false });
+      
+    if (error) throw error;
+    allPosts = data || [];
+    
     if(activeFilter !== 'people') renderGrid();
-  } catch {
+  } catch (err) {
+    console.error(err);
     if (allPosts.length === 0 && activeFilter !== 'people') {
       document.getElementById('grid').innerHTML = `
         <div class="state-msg"><div class="ico">📭</div><p>No posts yet — be the first to publish!</p></div>`;
@@ -860,18 +857,21 @@ async function publishPost() {
     const displayTitle = title || desc.slice(0, 60) || selectedFile?.name || 'Post';
     const content      = desc || title;
 
-    const r = await fetch(`${SB_URL}/rest/v1/${TABLE}`, {
-      method: 'POST',
-      headers: { apikey: SB_KEY, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
-      body: JSON.stringify({ title: `${name} — ${displayTitle}`, subject: content, file_url: fileUrl })
-    });
+    const { error } = await supabase
+      .from(TABLE)
+      .insert({ 
+        title: `${name} — ${displayTitle}`, 
+        subject: content, 
+        file_url: fileUrl 
+      });
 
-    if (!r.ok) throw new Error();
+    if (error) throw error;
 
     toast('Post published!', 'ok');
     closeUpload();
     await loadPosts();
-  } catch {
+  } catch (e) {
+    console.error(e);
     toast('Failed to publish', 'err');
   } finally {
     btn.disabled = false; btn.textContent = 'Publish';
@@ -887,16 +887,16 @@ async function uploadFile(file) {
   let pct = 0;
   const tick = setInterval(() => { pct = Math.min(pct + 8, 85); fill.style.width = pct + '%'; }, 120);
 
-  const fd = new FormData(); fd.append('file', file);
-  const r = await fetch(`${SB_URL}/storage/v1/object/${BUCKET}/${fileName}`, {
-    method: 'POST',
-    headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` },
-    body: fd
-  });
+  const { data, error } = await supabase.storage
+    .from(BUCKET)
+    .upload(fileName, file, { cacheControl: '3600', upsert: false });
 
   clearInterval(tick); fill.style.width = '100%';
-  if (!r.ok) throw new Error('File upload failed');
-  return `${SB_URL}/storage/v1/object/public/${BUCKET}/${fileName}`;
+  
+  if (error) throw error;
+  
+  const { data: publicUrlData } = supabase.storage.from(BUCKET).getPublicUrl(fileName);
+  return publicUrlData.publicUrl;
 }
 
 // ── FILTERS & NAVIGATION ──────────────
@@ -939,117 +939,138 @@ function overlayClickClose(e, id) {
   }
 }
 
-// ── REALTIME CHAT (Firebase) ──────────
+// ── REALTIME CHAT (Supabase) ──────────
 window.joinChat = async function() {
   const n = document.getElementById('chatNameInput').value.trim();
   if (!n) { toast('Please enter a name', 'err'); return; }
   window.chatUserName = n;
   document.getElementById('nameOverlay').classList.remove('open');
-  await initFirebaseChat();
+  await initSupabaseChat();
 }
 
-async function initFirebaseChat() {
+async function initSupabaseChat() {
   if (chatInitialized) return;
   try {
-    const configStr = typeof __firebase_config !== 'undefined' ? __firebase_config : null;
-    if (!configStr) {
-      document.getElementById('chatMessages').innerHTML = '<div style="text-align:center; padding:40px; color:var(--text3);">Chat is unavailable outside the Canvas environment.</div>';
-      return;
+    // Generate an anonymous ID for this session
+    chatUserId = 'usr_' + Math.random().toString(36).substr(2, 9);
+    
+    // 1. Fetch initial messages
+    const { data: initialMsgs } = await supabase
+      .from('chat_messages')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(50);
+      
+    if (initialMsgs) {
+      chatMessages = initialMsgs.reverse();
+      renderChatMessages();
     }
 
-    const firebaseConfig = JSON.parse(configStr);
-    const app = window.fbApp.initializeApp(firebaseConfig);
-    fbAuth = window.fbApp.getAuth(app);
-    fbDb = window.fbApp.getFirestore(app);
-    fbAppId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+    // 2. Fetch active users
+    await fetchActiveUsers();
 
-    // Follow strict Canvas Auth rules
-    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-      await window.fbApp.signInWithCustomToken(fbAuth, __initial_auth_token);
-    } else {
-      await window.fbApp.signInAnonymously(fbAuth);
-    }
+    // 3. Subscribe to NEW messages
+    supabase.channel('public:chat_messages')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' }, payload => {
+        chatMessages.push(payload.new);
+        renderChatMessages();
+      })
+      .subscribe();
 
-    window.fbApp.onAuthStateChanged(fbAuth, u => {
-      if (u) {
-        chatUser = u;
-        setupChatListeners();
-        registerPresence();
-        chatInitialized = true;
-      }
-    });
+    // 4. Subscribe to user activity (Inserts & Updates)
+    supabase.channel('public:chat_users')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'chat_users' }, payload => {
+        fetchActiveUsers(); // Simple approach: refetch list
+      })
+      .subscribe();
+
+    // Register our presence immediately
+    await registerPresence();
+    chatInitialized = true;
+
   } catch (e) {
     console.error(e);
     toast("Failed to connect to chat", "err");
   }
 }
 
+async function fetchActiveUsers() {
+  // Only show users active in the last 24 hours (optional logic)
+  const { data } = await supabase
+    .from('chat_users')
+    .select('*')
+    .order('last_active', { ascending: false });
+    
+  if (data) {
+    chatUsers = data;
+    renderChatUsers();
+  }
+}
+
 async function registerPresence() {
-  if (!chatUser || !fbDb) return;
-  const ref = window.fbApp.doc(fbDb, 'artifacts', fbAppId, 'public', 'data', 'chatUsers', chatUser.uid);
-  await window.fbApp.setDoc(ref, {
-    uid: chatUser.uid,
-    name: window.chatUserName,
-    lastActive: Date.now()
-  });
+  if (!chatUserId) return;
+  // Upsert the user presence
+  await supabase
+    .from('chat_users')
+    .upsert({
+      uid: chatUserId,
+      name: window.chatUserName,
+      last_active: new Date().toISOString()
+    });
+}
+
+function renderChatMessages() {
+  const box = document.getElementById('chatMessages');
+  if (chatMessages.length === 0) {
+    box.innerHTML = '<div style="text-align:center; padding:40px; color:var(--text3);">No messages yet. Say hi!</div>';
+    return;
+  }
+  
+  box.innerHTML = chatMessages.map(m => `
+    <div class="chat-msg ${m.uid === chatUserId ? 'me' : ''}">
+      <div class="chat-msg-name">${esc(m.name || 'Unknown')}</div>
+      <div class="chat-msg-bubble">${esc(m.text || '')}</div>
+    </div>
+  `).join('');
+  
+  box.scrollTop = box.scrollHeight;
+}
+
+function renderChatUsers() {
+  document.getElementById('peopleList').innerHTML = chatUsers.map(u => `
+    <div class="people-item">
+      <div class="people-avatar">${esc((u.name || '?').charAt(0))}</div>
+      <div>
+        <div class="people-name">${esc(u.name || 'Unknown')}</div>
+        <div class="people-status">Active</div>
+      </div>
+    </div>
+  `).join('');
 }
 
 window.sendChatMessage = async function() {
-  if (!chatUser || !fbDb) return;
+  if (!chatUserId) return;
   const input = document.getElementById('chatInput');
   const text = input.value.trim();
   if (!text) return;
   
   input.value = '';
-  const ref = window.fbApp.collection(fbDb, 'artifacts', fbAppId, 'public', 'data', 'chatMessages');
-  await window.fbApp.addDoc(ref, {
-    uid: chatUser.uid,
+  
+  // Instantly show our message locally for UI speed
+  const tempMsg = { uid: chatUserId, name: window.chatUserName, text: text, created_at: new Date().toISOString() };
+  chatMessages.push(tempMsg);
+  renderChatMessages();
+  
+  // Insert to Supabase (this will trigger the channel for others, but we ignore our own echo if we map it correctly, 
+  // though for a simple app we might just get an echo. We'll let the channel handle true syncing).
+  await supabase.from('chat_messages').insert({
+    uid: chatUserId,
     name: window.chatUserName,
-    text: text,
-    timestamp: Date.now()
+    text: text
   });
+  
+  // Update our last active timestamp
   registerPresence();
-}
-
-function setupChatListeners() {
-  // Listen to Messages
-  const msgsRef = window.fbApp.collection(fbDb, 'artifacts', fbAppId, 'public', 'data', 'chatMessages');
-  window.fbApp.onSnapshot(msgsRef, (snap) => {
-    const msgs = [];
-    snap.forEach(d => msgs.push(d.data()));
-    
-    // Sort in JS to obey Canvas query limits
-    msgs.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
-
-    const html = msgs.map(m => `
-      <div class="chat-msg ${m.uid === chatUser.uid ? 'me' : ''}">
-        <div class="chat-msg-name">${esc(m.name)}</div>
-        <div class="chat-msg-bubble">${esc(m.text)}</div>
-      </div>
-    `).join('');
-    
-    const box = document.getElementById('chatMessages');
-    box.innerHTML = html || '<div style="text-align:center; padding:40px; color:var(--text3);">No messages yet. Say hi!</div>';
-    box.scrollTop = box.scrollHeight;
-  }, err => console.error("Chat Error:", err));
-
-  // Listen to Users
-  const usersRef = window.fbApp.collection(fbDb, 'artifacts', fbAppId, 'public', 'data', 'chatUsers');
-  window.fbApp.onSnapshot(usersRef, (snap) => {
-    const usrs = [];
-    snap.forEach(d => usrs.push(d.data()));
-    usrs.sort((a, b) => b.lastActive - a.lastActive);
-
-    document.getElementById('peopleList').innerHTML = usrs.map(u => `
-      <div class="people-item">
-        <div class="people-avatar">${esc(u.name.charAt(0))}</div>
-        <div>
-          <div class="people-name">${esc(u.name)}</div>
-          <div class="people-status">Active now</div>
-        </div>
-      </div>
-    `).join('');
-  }, err => console.error("Users Error:", err));
 }
 
 // ── UTILS ─────────────────────────────
