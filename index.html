@@ -1,10 +1,10 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>p</title>
-<!-- Official Supabase JS SDK -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *, *::before, *::after {
@@ -58,6 +58,7 @@ body {
   align-items: center;
   text-decoration: none;
   min-width: 130px;
+  cursor: pointer;
 }
 
 .topbar-search {
@@ -82,6 +83,7 @@ body {
   font-size: 14px;
   color: var(--text);
   font-family: inherit;
+  min-width: 0;
 }
 .topbar-search input::placeholder { color: var(--text3); }
 
@@ -259,7 +261,7 @@ body {
 }
 
 .card-meta { flex: 1; min-width: 0; }
-.card-title { font-size: 14px; font-weight: 600; color: var(--text); line-height: 1.3; margin-bottom: 3px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.card-title { font-size: 14px; font-weight: 600; color: var(--text); line-height: 1.3; margin-bottom: 3px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; word-break: break-word; }
 .card-author { font-size: 12px; color: var(--text2); margin-bottom: 2px; }
 .card-time { font-size: 12px; color: var(--text3); }
 
@@ -287,13 +289,13 @@ body {
 .chat-main { flex: 1; display: flex; flex-direction: column; min-width: 0; background: var(--bg); }
 .chat-messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
 
-.chat-input-area { padding: 16px; border-top: 1px solid var(--border); display: flex; gap: 10px; background: var(--surface); }
-.chat-input-area input { flex: 1; background: var(--surface2); border: 1px solid var(--border); padding: 12px 16px; border-radius: 40px; color: var(--text); font-size: 14px; }
+.chat-input-area { padding: 16px; border-top: 1px solid var(--border); display: flex; gap: 10px; background: var(--surface); align-items: center; }
+.chat-input-area input { flex: 1; min-width: 0; background: var(--surface2); border: 1px solid var(--border); padding: 12px 16px; border-radius: 40px; color: var(--text); font-size: 14px; }
 .chat-input-area input:focus { border-color: var(--accent); }
-.chat-input-area button { background: var(--accent); border: none; color: #000; font-weight: 600; padding: 0 20px; border-radius: 40px; cursor: pointer; transition: 0.2s; }
+.chat-input-area button { background: var(--accent); border: none; color: #000; font-weight: 600; padding: 12px 20px; border-radius: 40px; cursor: pointer; transition: 0.2s; white-space: nowrap; }
 .chat-input-area button:hover { background: var(--accent-hover); }
 
-.chat-msg { max-width: 75%; align-self: flex-start; }
+.chat-msg { max-width: 85%; align-self: flex-start; }
 .chat-msg.me { align-self: flex-end; }
 .chat-msg-name { font-size: 11px; color: var(--text3); margin-bottom: 4px; margin-left: 4px; }
 .chat-msg.me .chat-msg-name { text-align: right; margin-right: 4px; margin-left: 0; }
@@ -301,8 +303,8 @@ body {
 .chat-msg.me .chat-msg-bubble { background: var(--accent); color: #000; border-color: var(--accent); border-top-left-radius: 16px; border-top-right-radius: 4px; }
 
 .people-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; }
-.people-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--surface2); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-weight: bold; color: var(--accent); font-size: 12px; text-transform: uppercase; }
-.people-name { font-size: 13px; font-weight: 600; color: var(--text); }
+.people-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--surface2); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-weight: bold; color: var(--accent); font-size: 12px; text-transform: uppercase; flex-shrink: 0;}
+.people-name { font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
 .people-status { font-size: 11px; color: #3ecf8e; margin-top: 2px;}
 
 /* ── MODALS & OVERLAYS ── */
@@ -311,21 +313,23 @@ body {
 }
 .overlay.open { display: flex; }
 
-.viewer { background: var(--surface); border-radius: 10px; width: 100%; max-width: 900px; margin: auto; overflow: hidden; border: 1px solid var(--border); }
-.viewer-topbar { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; border-bottom: 1px solid var(--border); }
-.viewer-title { font-size: 15px; font-weight: 600; flex: 1; margin-right: 12px; }
+.viewer { background: var(--surface); border-radius: 10px; width: 100%; max-width: 900px; margin: auto; overflow: hidden; border: 1px solid var(--border); display: flex; flex-direction: column; }
+.viewer-topbar { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.viewer-title { font-size: 15px; font-weight: 600; flex: 1; margin-right: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .viewer-close { background: var(--surface2); border: 1px solid var(--border); color: var(--text); width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; transition: background 0.15s; flex-shrink: 0; }
 .viewer-close:hover { background: var(--border); }
 
+/* Improved HTML App wrapper */
 .viewer-frame-wrap { width: 100%; aspect-ratio: 16/9; background: #000; position: relative; }
+.viewer-frame-wrap.html-app { aspect-ratio: unset; height: 75vh; }
 .viewer-frame-wrap iframe { width: 100%; height: 100%; border: none; display: block; }
 
 .viewer-text-only { padding: 40px 32px; font-size: 16px; line-height: 1.7; color: var(--text); white-space: pre-wrap; word-wrap: break-word; min-height: 200px; }
-.viewer-meta { padding: 20px; border-top: 1px solid var(--border); display: flex; align-items: center; gap: 14px; }
+.viewer-meta { padding: 20px; border-top: 1px solid var(--border); display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
 .viewer-avatar { width: 42px; height: 42px; border-radius: 50%; background: var(--surface2); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; color: var(--accent); text-transform: uppercase; flex-shrink: 0; }
 .viewer-author { font-size: 14px; font-weight: 600; }
 .viewer-date { font-size: 12px; color: var(--text3); margin-top: 2px; }
-.viewer-body { padding: 0 20px 20px; }
+.viewer-body { padding: 0 20px 20px; flex-shrink: 0; }
 .viewer-body-text { font-size: 14px; line-height: 1.6; color: var(--text2); white-space: pre-wrap; word-break: break-word; }
 
 .upload-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 400; display: none; align-items: center; justify-content: center; padding: 20px; }
@@ -357,8 +361,8 @@ body {
 .btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
 
 /* Toast */
-.toast-wrap { position: fixed; bottom: 80px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; align-items: flex-end; }
-.toast { background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 12px 18px; border-radius: 8px; font-size: 13px; font-weight: 500; animation: toastIn 0.25s ease-out; max-width: 280px; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+.toast-wrap { position: fixed; bottom: 80px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; align-items: flex-end; pointer-events: none; }
+.toast { background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 12px 18px; border-radius: 8px; font-size: 13px; font-weight: 500; animation: toastIn 0.25s ease-out; max-width: 280px; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); pointer-events: auto; }
 .toast.ok { border-left: 3px solid #3ecf8e; }
 .toast.err { border-left: 3px solid var(--red); }
 @keyframes toastIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
@@ -377,16 +381,17 @@ body {
   .topbar-search { display: none; }
   .main { margin-left: 0; padding: 12px; padding-bottom: 90px; }
   .grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
-  .viewer-text-only { padding: 20px; }
   
+  .overlay { padding: 10px; } /* Maximize screen space for modals */
+
   .chat-layout { flex-direction: column; }
-  .chat-sidebar { width: 100%; height: 110px; border-right: none; border-bottom: 1px solid var(--border); padding: 10px; display: flex; flex-direction: column; }
+  .chat-sidebar { width: 100%; height: 105px; border-right: none; border-bottom: 1px solid var(--border); padding: 10px; display: flex; flex-direction: column; flex-shrink: 0; }
   #peopleList { display: flex; overflow-x: auto; gap: 16px; padding-bottom: 8px; scrollbar-width: none; }
   #peopleList::-webkit-scrollbar { display: none; }
   .people-item { flex-direction: column; gap: 4px; text-align: center; }
   .people-name { font-size: 11px; white-space: nowrap; max-width: 50px; overflow: hidden; text-overflow: ellipsis; }
   .people-status { display: none; }
-  .chat-container { height: calc(100vh - var(--nav-h) - 65px - 16px); margin-top: 0; border: none; border-radius: 0; }
+  .chat-container { height: calc(100vh - var(--nav-h) - 65px - 10px); margin-top: 0; border: none; border-radius: 0; }
 
   .fab {
     position: fixed;
@@ -418,6 +423,7 @@ body {
   .bottom-nav-item {
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     gap: 4px; color: var(--text2); cursor: pointer; flex: 1; height: 100%; transition: color 0.15s;
+    -webkit-tap-highlight-color: transparent;
   }
   
   .bottom-nav-item.active { color: var(--accent); }
@@ -428,16 +434,15 @@ body {
 </head>
 <body>
 
-<!-- TOPBAR -->
 <div class="topbar">
-  <a class="topbar-logo" href="#" onclick="setFilter('all')">
+  <div class="topbar-logo" onclick="setFilter('all')">
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="width: 26px; height: 26px;">
       <path d="M4 4h6a5 5 0 0 1 5 5v0a5 5 0 0 1-5 5H4v6"/>
     </svg>
-  </a>
+  </div>
   <div class="topbar-search">
     <input type="text" id="searchInput" placeholder="Search files, posts, people…" oninput="handleSearch()">
-    <button>🔍</button>
+    <button onclick="handleSearch()">🔍</button>
   </div>
   <div class="topbar-actions">
     <button class="btn-upload-top" onclick="openUpload()">
@@ -446,10 +451,8 @@ body {
   </div>
 </div>
 
-<!-- LAYOUT -->
 <div class="layout">
 
-  <!-- SIDEBAR (Desktop Only) -->
   <aside class="sidebar">
     <div class="sidebar-item active" data-filter="all" onclick="setFilter('all')">
       <span class="sidebar-icon">🏠</span> Home
@@ -465,7 +468,7 @@ body {
     </div>
     <div class="sidebar-divider"></div>
     <div class="sidebar-item" data-filter="people" onclick="setFilter('people')">
-      <span class="sidebar-icon">👥</span> People Chat
+      <span class="sidebar-icon">👥</span> Chat
     </div>
     <div class="sidebar-divider"></div>
     <div class="sidebar-section-title">Manage</div>
@@ -477,9 +480,7 @@ body {
     </div>
   </aside>
 
-  <!-- MAIN -->
   <main class="main">
-    <!-- Category Chips -->
     <div class="chips" id="chips">
       <div class="chip active" data-filter="all" onclick="setFilter('all')">All</div>
       <div class="chip" data-filter="media" onclick="setFilter('media')">Images</div>
@@ -488,12 +489,10 @@ body {
       <div class="chip" data-filter="people" onclick="setFilter('people')">Chat</div>
     </div>
 
-    <!-- Main Grid -->
     <div class="grid" id="grid">
       <div class="spinner-wrap"><div class="spinner"></div></div>
     </div>
 
-    <!-- Chat Interface -->
     <div id="chatContainer" class="chat-container">
       <div class="chat-layout">
         <div class="chat-sidebar">
@@ -514,12 +513,10 @@ body {
   </main>
 </div>
 
-<!-- FAB (Mobile) -->
 <div class="fab" onclick="openUpload()">
   <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
 </div>
 
-<!-- BOTTOM NAV (Mobile) -->
 <nav class="bottom-nav">
   <div class="bottom-nav-item active" data-filter="all" onclick="setFilter('all')">
     <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
@@ -535,15 +532,14 @@ body {
   </div>
   <div class="bottom-nav-item" data-filter="html" onclick="setFilter('html')">
     <svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
-    <span>HTML</span>
+    <span>Apps</span>
   </div>
   <div class="bottom-nav-item" data-filter="people" onclick="setFilter('people')">
     <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-    <span>People</span>
+    <span>Chat</span>
   </div>
 </nav>
 
-<!-- VIEWER OVERLAY -->
 <div class="overlay" id="viewerOverlay" onclick="overlayClickClose(event, 'viewerOverlay')">
   <div class="viewer" id="viewer">
     <div class="viewer-topbar">
@@ -553,7 +549,7 @@ body {
     <div id="viewerContent"></div>
     <div class="viewer-meta">
       <div class="viewer-avatar" id="viewerAvatar">?</div>
-      <div>
+      <div style="min-width:0;">
         <div class="viewer-author" id="viewerAuthor">–</div>
         <div class="viewer-date" id="viewerDate">–</div>
       </div>
@@ -562,7 +558,6 @@ body {
   </div>
 </div>
 
-<!-- UPLOAD MODAL -->
 <div class="upload-overlay" id="uploadOverlay" onclick="overlayClickClose(event, 'uploadOverlay')">
   <div class="upload-modal">
     <div class="upload-header">
@@ -603,19 +598,17 @@ body {
   </div>
 </div>
 
-<!-- CHAT NAME MODAL -->
 <div class="overlay" id="nameOverlay" onclick="overlayClickClose(event, 'nameOverlay')">
   <div class="upload-modal" style="max-width: 320px; text-align: center;">
     <div class="upload-body" style="padding: 32px 24px;">
       <h3 style="margin-bottom: 12px; color: var(--text);">Join the Chat</h3>
       <p style="font-size: 13px; color: var(--text2); margin-bottom: 20px;">What should everyone call you?</p>
-      <input type="text" id="chatNameInput" placeholder="e.g. Alex" class="field" style="width:100%; margin-bottom: 16px; padding: 12px; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; color: var(--text);">
+      <input type="text" id="chatNameInput" placeholder="e.g. Momin" class="field" style="width:100%; margin-bottom: 16px; padding: 12px; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; color: var(--text);">
       <button class="btn btn-primary" style="width: 100%; padding: 12px;" onclick="joinChat()">Start Chatting</button>
     </div>
   </div>
 </div>
 
-<!-- TOAST CONTAINER -->
 <div class="toast-wrap" id="toastWrap"></div>
 
 <script>
@@ -642,8 +635,6 @@ let chatUsers = [];
 // ── INIT ──────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   loadPosts();
-  // We no longer need the 8s polling interval for posts because we can fetch fresh when needed,
-  // but we can keep a slow poll just in case users don't refresh manually.
   setInterval(loadPosts, 15000); 
 });
 
@@ -770,7 +761,8 @@ function openViewer(p) {
     if (type === 'media') {
       content.innerHTML = `<img src="${p.file_url}" style="width:100%; height:auto; display:block; max-height:70vh; object-fit:contain; background:#000;">`;
     } else if (type === 'html') {
-      content.innerHTML = `<div class="viewer-frame-wrap"><iframe src="${p.file_url}" sandbox="allow-scripts allow-same-origin allow-forms"></iframe></div>`;
+      // Added class 'html-app' to enable proper app height
+      content.innerHTML = `<div class="viewer-frame-wrap html-app"><iframe src="${p.file_url}" sandbox="allow-scripts allow-same-origin allow-forms allow-popups" scrolling="yes"></iframe></div>`;
     } else {
       content.innerHTML = `
         <div style="padding: 80px 20px; text-align: center;">
@@ -914,6 +906,10 @@ function setFilter(f) {
     document.getElementById('chatContainer').style.display = 'block';
     if (!window.chatUserName) {
       document.getElementById('nameOverlay').classList.add('open');
+    } else {
+      // Scroll to bottom when reopening
+      const box = document.getElementById('chatMessages');
+      box.scrollTop = box.scrollHeight;
     }
   } else {
     document.getElementById('grid').style.display = 'grid';
@@ -951,7 +947,6 @@ window.joinChat = async function() {
 async function initSupabaseChat() {
   if (chatInitialized) return;
   try {
-    // Generate an anonymous ID for this session
     chatUserId = 'usr_' + Math.random().toString(36).substr(2, 9);
     
     // 1. Fetch initial messages
@@ -977,14 +972,13 @@ async function initSupabaseChat() {
       })
       .subscribe();
 
-    // 4. Subscribe to user activity (Inserts & Updates)
+    // 4. Subscribe to user activity
     supabase.channel('public:chat_users')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'chat_users' }, payload => {
-        fetchActiveUsers(); // Simple approach: refetch list
+        fetchActiveUsers();
       })
       .subscribe();
 
-    // Register our presence immediately
     await registerPresence();
     chatInitialized = true;
 
@@ -995,7 +989,6 @@ async function initSupabaseChat() {
 }
 
 async function fetchActiveUsers() {
-  // Only show users active in the last 24 hours (optional logic)
   const { data } = await supabase
     .from('chat_users')
     .select('*')
@@ -1009,7 +1002,6 @@ async function fetchActiveUsers() {
 
 async function registerPresence() {
   if (!chatUserId) return;
-  // Upsert the user presence
   await supabase
     .from('chat_users')
     .upsert({
@@ -1040,7 +1032,7 @@ function renderChatUsers() {
   document.getElementById('peopleList').innerHTML = chatUsers.map(u => `
     <div class="people-item">
       <div class="people-avatar">${esc((u.name || '?').charAt(0))}</div>
-      <div>
+      <div style="min-width:0; text-align:left;">
         <div class="people-name">${esc(u.name || 'Unknown')}</div>
         <div class="people-status">Active</div>
       </div>
@@ -1056,20 +1048,13 @@ window.sendChatMessage = async function() {
   
   input.value = '';
   
-  // Instantly show our message locally for UI speed
-  const tempMsg = { uid: chatUserId, name: window.chatUserName, text: text, created_at: new Date().toISOString() };
-  chatMessages.push(tempMsg);
-  renderChatMessages();
-  
-  // Insert to Supabase (this will trigger the channel for others, but we ignore our own echo if we map it correctly, 
-  // though for a simple app we might just get an echo. We'll let the channel handle true syncing).
+  // Real-time insert
   await supabase.from('chat_messages').insert({
     uid: chatUserId,
     name: window.chatUserName,
     text: text
   });
   
-  // Update our last active timestamp
   registerPresence();
 }
 
@@ -1100,3 +1085,6 @@ function toast(msg, type = 'ok') {
 </script>
 </body>
 </html>
+
+
+```
