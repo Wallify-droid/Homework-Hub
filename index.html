@@ -300,10 +300,17 @@ body {
 .chat-msg-bubble { background: var(--surface2); border: 1px solid var(--border); padding: 10px 14px; border-radius: 16px; border-top-left-radius: 4px; font-size: 14px; line-height: 1.4; word-break: break-word; }
 .chat-msg.me .chat-msg-bubble { background: var(--accent); color: #000; border-color: var(--accent); border-top-left-radius: 16px; border-top-right-radius: 4px; }
 
-.people-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; }
+.people-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 8px; cursor: pointer; transition: background 0.15s; margin: 0 -10px; }
+.people-item:hover { background: var(--surface2); }
+.people-item.active { background: var(--surface2); }
+.people-item.active .people-name { color: var(--accent); }
 .people-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--surface2); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-weight: bold; color: var(--accent); font-size: 12px; text-transform: uppercase; flex-shrink: 0;}
 .people-name { font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
 .people-status { font-size: 11px; color: #3ecf8e; margin-top: 2px;}
+
+.chat-thread-header { display: flex; align-items: center; gap: 10px; padding: 14px 20px; border-bottom: 1px solid var(--border); flex-shrink: 0; background: var(--surface); }
+.chat-thread-avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--surface2); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-weight: bold; color: var(--accent); font-size: 13px; text-transform: uppercase; flex-shrink: 0; }
+.chat-thread-name { font-size: 14px; font-weight: 600; color: var(--text); }
 
 /* ── MODALS & OVERLAYS ── */
 .overlay {
@@ -383,11 +390,15 @@ body {
   .overlay { padding: 10px; } /* Maximize screen space for modals */
 
   .chat-layout { flex-direction: column; }
-  .chat-sidebar { width: 100%; height: 105px; border-right: none; border-bottom: 1px solid var(--border); padding: 10px; display: flex; flex-direction: column; flex-shrink: 0; }
-  #peopleList { display: flex; overflow-x: auto; gap: 16px; padding-bottom: 8px; scrollbar-width: none; }
-  #peopleList::-webkit-scrollbar { display: none; }
-  .people-item { flex-direction: column; gap: 4px; text-align: center; }
-  .people-name { font-size: 11px; white-space: nowrap; max-width: 50px; overflow: hidden; text-overflow: ellipsis; }
+  .chat-sidebar { width: 100%; height: auto; border-right: none; border-bottom: 1px solid var(--border); padding: 10px; flex-shrink: 0; }
+  .chat-sidebar .sidebar-section-title { display: none; }
+  .chat-sidebar .sidebar-divider { display: none; }
+  .chat-sidebar { display: flex; flex-direction: row; align-items: center; overflow-x: auto; gap: 14px; scrollbar-width: none; }
+  .chat-sidebar::-webkit-scrollbar { display: none; }
+  #peopleList { display: flex; gap: 14px; flex-shrink: 0; }
+  .people-item { flex-direction: column; gap: 4px; text-align: center; padding: 4px 6px; margin: 0; flex-shrink: 0; }
+  .people-item-group { flex-shrink: 0; }
+  .people-name { font-size: 11px; white-space: nowrap; max-width: 56px; overflow: hidden; text-overflow: ellipsis; }
   .people-status { display: none; }
   .chat-container { height: calc(100vh - var(--nav-h) - 65px - 10px); margin-top: 0; border: none; border-radius: 0; }
 
@@ -494,10 +505,23 @@ body {
     <div id="chatContainer" class="chat-container">
       <div class="chat-layout">
         <div class="chat-sidebar">
-           <div class="sidebar-section-title" style="padding-left:0; margin-bottom: 12px;">Active People</div>
+           <div class="sidebar-section-title" style="padding-left:0; margin-bottom: 12px;">Conversations</div>
+           <div class="people-item people-item-group active" id="groupChatItem" onclick="openGroupChat()">
+              <div class="people-avatar" style="color:var(--text);">#</div>
+              <div style="min-width:0; text-align:left;">
+                <div class="people-name">Group Chat</div>
+                <div class="people-status">Everyone</div>
+              </div>
+           </div>
+           <div class="sidebar-divider" style="margin: 10px 0;"></div>
+           <div class="sidebar-section-title" style="padding-left:0; margin-bottom: 6px;">Active People</div>
            <div id="peopleList"><div style="color:var(--text3); font-size:12px;">Loading…</div></div>
         </div>
         <div class="chat-main">
+           <div class="chat-thread-header" id="chatThreadHeader">
+             <div class="chat-thread-avatar" id="chatThreadAvatar">#</div>
+             <div class="chat-thread-name" id="chatThreadName">Group Chat</div>
+           </div>
            <div class="chat-messages" id="chatMessages">
               <div style="text-align:center; padding: 40px; color: var(--text3);">Loading messages...</div>
            </div>
@@ -634,6 +658,15 @@ let chatMessages = [];
 let chatUsers = [];
 let presenceHeartbeat = null;
 let usersChannelSubscribed = false;
+let messagesChannelSubscribed = false;
+
+// null = group chat thread, otherwise { uid, name } of the person being DM'd
+let currentThread = null;
+// Set to false the first time we learn the chat_messages table has no
+// to_uid column, so DMs can degrade gracefully with one clear warning
+// instead of failing silently on every send.
+let dmSupported = true;
+let dmWarned = false;
 
 // ── INIT ──────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
@@ -753,8 +786,8 @@ function cardHTML(p) {
       thumb = `<div class="card-thumb-icon">📄</div>`;
       badge = 'DOC';
     } else if (type === 'html') {
-      thumb = `<iframe class="card-thumb-preview" src="${p.file_url}" sandbox="allow-scripts allow-same-origin" scrolling="no"></iframe>`;
-      badge = 'HTML';
+      thumb = `<iframe class="card-thumb-preview" src="${p.file_url}" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals" scrolling="no"></iframe>`;
+      badge = 'APP';
     } else {
       thumb = `<div class="card-thumb-icon">📁</div>`;
       badge = 'FILE';
@@ -793,7 +826,7 @@ function openViewer(p) {
       content.innerHTML = `<img src="${p.file_url}" style="width:100%; height:auto; display:block; max-height:70vh; object-fit:contain; background:#000;">`;
     } else if (type === 'html') {
       // Added class 'html-app' to enable proper app height
-      content.innerHTML = `<div class="viewer-frame-wrap html-app"><iframe src="${p.file_url}" sandbox="allow-scripts allow-same-origin allow-forms allow-popups" scrolling="yes"></iframe></div>`;
+      content.innerHTML = `<div class="viewer-frame-wrap html-app"><iframe src="${p.file_url}" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-popups-to-escape-sandbox" scrolling="yes"></iframe></div>`;
     } else {
       content.innerHTML = `
         <div style="padding: 80px 20px; text-align: center;">
@@ -1013,12 +1046,14 @@ async function subscribeToActiveUsers() {
 
 function renderChatUsers() {
   const list = document.getElementById('peopleList');
-  if (!chatUsers.length) {
+  const others = chatUsers.filter(u => u.uid !== chatUserId);
+
+  if (!others.length) {
     list.innerHTML = '<div style="color:var(--text3); font-size:12px;">No one online yet.</div>';
     return;
   }
-  list.innerHTML = chatUsers.map(u => `
-    <div class="people-item">
+  list.innerHTML = others.map(u => `
+    <div class="people-item${currentThread && currentThread.uid === u.uid ? ' active' : ''}" onclick='openDM(${JSON.stringify({ uid: u.uid, name: u.name })})'>
       <div class="people-avatar">${esc((u.name || '?').charAt(0))}</div>
       <div style="min-width:0; text-align:left;">
         <div class="people-name">${esc(u.name || 'Unknown')}</div>
@@ -1026,6 +1061,42 @@ function renderChatUsers() {
       </div>
     </div>
   `).join('');
+}
+
+// ── THREAD SWITCHING (Group vs 1:1 DM) ──────────
+function updateThreadHeader() {
+  const avatar = document.getElementById('chatThreadAvatar');
+  const name = document.getElementById('chatThreadName');
+  if (currentThread) {
+    avatar.textContent = (currentThread.name || '?').charAt(0).toUpperCase();
+    name.textContent = currentThread.name || 'Unknown';
+  } else {
+    avatar.textContent = '#';
+    name.textContent = 'Group Chat';
+  }
+  document.getElementById('groupChatItem').classList.toggle('active', !currentThread);
+  renderChatUsers();
+}
+
+window.openGroupChat = function() {
+  currentThread = null;
+  updateThreadHeader();
+  renderChatMessages();
+}
+
+window.openDM = function(person) {
+  if (!window.chatUserName) {
+    // Need a name before DMing — open the join modal first.
+    document.getElementById('nameOverlay').classList.add('open');
+    return;
+  }
+  if (!dmSupported && !dmWarned) {
+    dmWarned = true;
+    toast('Direct messages need a one-time setup — see chat for details', 'err');
+  }
+  currentThread = { uid: person.uid, name: person.name };
+  updateThreadHeader();
+  renderChatMessages();
 }
 
 // ── CHAT (plain fetch for reads/writes; SDK only for realtime push) ──────────
@@ -1040,10 +1111,14 @@ window.joinChat = async function() {
 async function initChat() {
   if (chatInitialized) return;
   try {
+    // Real id for this session — used to tell "my" messages apart from
+    // everyone else's, and as the address other people DM to.
     chatUserId = 'usr_' + Math.random().toString(36).substr(2, 9);
 
-    // 1. Fetch initial messages via plain fetch — fast, no SDK wait.
-    const r = await fetch(`${SB_URL}/rest/v1/chat_messages?order=created_at.desc&limit=50`, {
+    // 1. Fetch recent messages via plain fetch — fast, no SDK wait. Pulls
+    // both group messages and any DMs involving this user; rendering
+    // filters down to whichever thread is currently open.
+    const r = await fetch(`${SB_URL}/rest/v1/chat_messages?order=created_at.desc&limit=200`, {
       headers: { apikey: SB_KEY }
     });
     if (r.ok) {
@@ -1099,14 +1174,30 @@ async function registerPresence() {
   }
 }
 
+// A message belongs to the currently open thread if: it's a group message
+// (to_uid is null/absent) and we're viewing Group, or it's a DM between
+// exactly me and the open person (in either direction).
+function messageBelongsToCurrentThread(m) {
+  const toUid = m.to_uid ?? null;
+  if (!currentThread) {
+    return !toUid;
+  }
+  return (m.uid === chatUserId && toUid === currentThread.uid) ||
+         (m.uid === currentThread.uid && toUid === chatUserId);
+}
+
 function renderChatMessages() {
   const box = document.getElementById('chatMessages');
-  if (chatMessages.length === 0) {
-    box.innerHTML = '<div style="text-align:center; padding:40px; color:var(--text3);">No messages yet. Say hi!</div>';
+  const visible = chatMessages.filter(messageBelongsToCurrentThread);
+
+  if (visible.length === 0) {
+    box.innerHTML = currentThread
+      ? `<div style="text-align:center; padding:40px; color:var(--text3);">No messages with ${esc(currentThread.name)} yet. Say hi!</div>`
+      : '<div style="text-align:center; padding:40px; color:var(--text3);">No messages yet. Say hi!</div>';
     return;
   }
 
-  box.innerHTML = chatMessages.map(m => `
+  box.innerHTML = visible.map(m => `
     <div class="chat-msg ${m.uid === chatUserId ? 'me' : ''}">
       <div class="chat-msg-name">${esc(m.name || 'Unknown')}</div>
       <div class="chat-msg-bubble">${esc(m.text || '')}</div>
@@ -1124,20 +1215,56 @@ window.sendChatMessage = async function() {
 
   input.value = '';
 
+  const payload = {
+    uid: chatUserId,
+    name: window.chatUserName,
+    text: text
+  };
+  // Only attach to_uid once we know the column exists, so a missing
+  // column doesn't break sending group messages too.
+  if (currentThread && dmSupported) {
+    payload.to_uid = currentThread.uid;
+  }
+
   try {
-    await fetch(`${SB_URL}/rest/v1/chat_messages`, {
+    const r = await fetch(`${SB_URL}/rest/v1/chat_messages`, {
       method: 'POST',
       headers: {
         apikey: SB_KEY,
         'Content-Type': 'application/json',
         Prefer: 'return=minimal'
       },
-      body: JSON.stringify({
-        uid: chatUserId,
-        name: window.chatUserName,
-        text: text
-      })
+      body: JSON.stringify(payload)
     });
+
+    if (!r.ok && currentThread && payload.to_uid) {
+      const errText = await r.text().catch(() => '');
+      if (errText.includes('to_uid') || errText.includes('column') || r.status === 400) {
+        // The chat_messages table doesn't have a to_uid column yet.
+        // Fall back to sending as a group message so it isn't lost, and
+        // warn once with the fix needed.
+        dmSupported = false;
+        if (!dmWarned) {
+          dmWarned = true;
+          toast('DMs need a to_uid column on chat_messages — sent to Group instead', 'err');
+        }
+        delete payload.to_uid;
+        await fetch(`${SB_URL}/rest/v1/chat_messages`, {
+          method: 'POST',
+          headers: {
+            apikey: SB_KEY,
+            'Content-Type': 'application/json',
+            Prefer: 'return=minimal'
+          },
+          body: JSON.stringify(payload)
+        });
+      }
+    }
+
+    // Optimistically show the message immediately rather than waiting on
+    // the realtime echo, in case the channel is still connecting.
+    chatMessages.push({ ...payload, created_at: new Date().toISOString() });
+    renderChatMessages();
   } catch (e) {
     console.error('Failed to send message', e);
     toast('Failed to send message', 'err');
