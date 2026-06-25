@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>p</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *, *::before, *::after {
   box-sizing: border-box;
@@ -611,10 +610,10 @@ body {
 <div class="toast-wrap" id="toastWrap"></div>
 
 <script>
-// Initialize Supabase SDK
+// Raw REST config — no SDK needed for posts, so the grid can load
+// immediately without waiting on an extra JS bundle to download/parse.
 const SB_URL = 'https://nzolsmouyulzqeaocejm.supabase.co';
 const SB_KEY = 'sb_publishable_EGX3jDjRh5LiXjdTw2AXxA_e1YIaP4Q';
-const supabase = window.supabase.createClient(SB_URL, SB_KEY);
 
 const BUCKET  = 'homework-files';
 const TABLE   = 'homework';
@@ -624,7 +623,10 @@ let activeFilter = 'all';
 let searchQuery  = '';
 let selectedFile = null;
 
-// Chat State
+// Chat State (chat/presence need realtime, so they use the SDK — loaded
+// lazily in the background so it never blocks the initial page render)
+let supabase = null;
+let supabaseReadyPromise = null;
 let chatUserId = null;
 window.chatUserName = null;
 let chatInitialized = false;
@@ -635,33 +637,53 @@ let usersChannelSubscribed = false;
 
 // ── INIT ──────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-  // Load posts immediately, no artificial delay.
+  // Load posts immediately via plain fetch — no SDK to wait on.
   loadPosts();
   setInterval(loadPosts, 15000);
 
-  // Start tracking the site's active users right away, independent of
-  // whether anyone has opened the Chat tab or joined chat yet. This way
-  // the people list is populated as soon as the site loads.
+  // Fetch the active-people list immediately too, via plain fetch, so it's
+  // ready before the SDK (needed only for realtime updates + chat) even
+  // finishes loading in the background.
   fetchActiveUsers();
-  subscribeToActiveUsers();
   setInterval(fetchActiveUsers, 20000);
+
+  // Load the Supabase SDK in the background, off the critical path, so
+  // realtime chat/presence are ready shortly after without delaying the
+  // initial render of posts or the people list.
+  loadSupabaseSdk().then(() => {
+    subscribeToActiveUsers();
+  });
 });
 
-// ── SUPABASE FETCH (Posts) ──────────────
+// Lazily inject the Supabase SDK script tag and resolve once it's ready.
+function loadSupabaseSdk() {
+  if (supabaseReadyPromise) return supabaseReadyPromise;
+  supabaseReadyPromise = new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+    script.onload = () => {
+      supabase = window.supabase.createClient(SB_URL, SB_KEY);
+      resolve(supabase);
+    };
+    script.onerror = reject;
+    document.head.appendChild(script);
+  });
+  return supabaseReadyPromise;
+}
+
+// ── POSTS (plain fetch — fast, no SDK wait) ──────────────
 async function loadPosts(showSpinner = false) {
   if (showSpinner) {
     document.getElementById('grid').innerHTML = '<div class="spinner-wrap"><div class="spinner"></div></div>';
   }
   try {
-    const { data, error } = await supabase
-      .from(TABLE)
-      .select('*')
-      .order('created_at', { ascending: false });
+    const r = await fetch(`${SB_URL}/rest/v1/${TABLE}?order=created_at.desc`, {
+      headers: { apikey: SB_KEY }
+    });
+    if (!r.ok) throw new Error('Failed to load posts');
+    allPosts = await r.json();
 
-    if (error) throw error;
-    allPosts = data || [];
-
-    if(activeFilter !== 'people') renderGrid();
+    if (activeFilter !== 'people') renderGrid();
   } catch (err) {
     console.error(err);
     if (allPosts.length === 0 && activeFilter !== 'people') {
@@ -858,15 +880,21 @@ async function publishPost() {
     const displayTitle = title || desc.slice(0, 60) || selectedFile?.name || 'Post';
     const content      = desc || title;
 
-    const { error } = await supabase
-      .from(TABLE)
-      .insert({
+    const r = await fetch(`${SB_URL}/rest/v1/${TABLE}`, {
+      method: 'POST',
+      headers: {
+        apikey: SB_KEY,
+        'Content-Type': 'application/json',
+        Prefer: 'return=minimal'
+      },
+      body: JSON.stringify({
         title: `${name} — ${displayTitle}`,
         subject: content,
         file_url: fileUrl
-      });
+      })
+    });
 
-    if (error) throw error;
+    if (!r.ok) throw new Error('Failed to publish');
 
     toast('Post published!', 'ok');
     closeUpload();
@@ -888,16 +916,23 @@ async function uploadFile(file) {
   let pct = 0;
   const tick = setInterval(() => { pct = Math.min(pct + 8, 85); fill.style.width = pct + '%'; }, 120);
 
-  const { data, error } = await supabase.storage
-    .from(BUCKET)
-    .upload(fileName, file, { cacheControl: '3600', upsert: false });
+  const fd = new FormData();
+  fd.append('file', file);
+
+  const r = await fetch(`${SB_URL}/storage/v1/object/${BUCKET}/${fileName}`, {
+    method: 'POST',
+    headers: {
+      apikey: SB_KEY,
+      Authorization: `Bearer ${SB_KEY}`
+    },
+    body: fd
+  });
 
   clearInterval(tick); fill.style.width = '100%';
 
-  if (error) throw error;
+  if (!r.ok) throw new Error('File upload failed');
 
-  const { data: publicUrlData } = supabase.storage.from(BUCKET).getPublicUrl(fileName);
-  return publicUrlData.publicUrl;
+  return `${SB_URL}/storage/v1/object/public/${BUCKET}/${fileName}`;
 }
 
 // ── FILTERS & NAVIGATION ──────────────
@@ -949,29 +984,27 @@ function overlayClickClose(e, id) {
   }
 }
 
-// ── ACTIVE USERS (loads on page load, not gated by joining chat) ──────────
+// ── ACTIVE USERS (plain fetch — loads on page load, not gated by joining chat) ──────────
 async function fetchActiveUsers() {
   try {
-    const { data, error } = await supabase
-      .from('chat_users')
-      .select('*')
-      .order('last_active', { ascending: false });
-
-    if (error) throw error;
-
-    if (data) {
-      chatUsers = data;
-      renderChatUsers();
-    }
+    const r = await fetch(`${SB_URL}/rest/v1/chat_users?order=last_active.desc`, {
+      headers: { apikey: SB_KEY }
+    });
+    if (!r.ok) throw new Error('Failed to fetch active users');
+    chatUsers = await r.json();
+    renderChatUsers();
   } catch (e) {
     console.error('Failed to fetch active users', e);
   }
 }
 
-function subscribeToActiveUsers() {
+// Realtime updates need the SDK's websocket channel, so this waits on the
+// (already-loading-in-the-background) SDK only at the point it's needed.
+async function subscribeToActiveUsers() {
   if (usersChannelSubscribed) return;
   usersChannelSubscribed = true;
-  supabase.channel('public:chat_users')
+  const sb = await loadSupabaseSdk();
+  sb.channel('public:chat_users')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'chat_users' }, () => {
       fetchActiveUsers();
     })
@@ -995,28 +1028,26 @@ function renderChatUsers() {
   `).join('');
 }
 
-// ── REALTIME CHAT (Supabase) ──────────
+// ── CHAT (plain fetch for reads/writes; SDK only for realtime push) ──────────
 window.joinChat = async function() {
   const n = document.getElementById('chatNameInput').value.trim();
   if (!n) { toast('Please enter a name', 'err'); return; }
   window.chatUserName = n;
   document.getElementById('nameOverlay').classList.remove('open');
-  await initSupabaseChat();
+  await initChat();
 }
 
-async function initSupabaseChat() {
+async function initChat() {
   if (chatInitialized) return;
   try {
     chatUserId = 'usr_' + Math.random().toString(36).substr(2, 9);
 
-    // 1. Fetch initial messages
-    const { data: initialMsgs } = await supabase
-      .from('chat_messages')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .limit(50);
-
-    if (initialMsgs) {
+    // 1. Fetch initial messages via plain fetch — fast, no SDK wait.
+    const r = await fetch(`${SB_URL}/rest/v1/chat_messages?order=created_at.desc&limit=50`, {
+      headers: { apikey: SB_KEY }
+    });
+    if (r.ok) {
+      const initialMsgs = await r.json();
       chatMessages = initialMsgs.reverse();
       renderChatMessages();
     }
@@ -1026,8 +1057,9 @@ async function initSupabaseChat() {
     await registerPresence();
     await fetchActiveUsers();
 
-    // 3. Subscribe to NEW messages
-    supabase.channel('public:chat_messages')
+    // 3. Subscribe to NEW messages (needs the realtime SDK)
+    const sb = await loadSupabaseSdk();
+    sb.channel('public:chat_messages')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' }, payload => {
         chatMessages.push(payload.new);
         renderChatMessages();
@@ -1048,13 +1080,23 @@ async function initSupabaseChat() {
 
 async function registerPresence() {
   if (!chatUserId) return;
-  await supabase
-    .from('chat_users')
-    .upsert({
-      uid: chatUserId,
-      name: window.chatUserName,
-      last_active: new Date().toISOString()
+  try {
+    await fetch(`${SB_URL}/rest/v1/chat_users`, {
+      method: 'POST',
+      headers: {
+        apikey: SB_KEY,
+        'Content-Type': 'application/json',
+        Prefer: 'resolution=merge-duplicates,return=minimal'
+      },
+      body: JSON.stringify({
+        uid: chatUserId,
+        name: window.chatUserName,
+        last_active: new Date().toISOString()
+      })
     });
+  } catch (e) {
+    console.error('Failed to register presence', e);
+  }
 }
 
 function renderChatMessages() {
@@ -1082,15 +1124,28 @@ window.sendChatMessage = async function() {
 
   input.value = '';
 
-  // Real-time insert
-  await supabase.from('chat_messages').insert({
-    uid: chatUserId,
-    name: window.chatUserName,
-    text: text
-  });
+  try {
+    await fetch(`${SB_URL}/rest/v1/chat_messages`, {
+      method: 'POST',
+      headers: {
+        apikey: SB_KEY,
+        'Content-Type': 'application/json',
+        Prefer: 'return=minimal'
+      },
+      body: JSON.stringify({
+        uid: chatUserId,
+        name: window.chatUserName,
+        text: text
+      })
+    });
+  } catch (e) {
+    console.error('Failed to send message', e);
+    toast('Failed to send message', 'err');
+  }
 
   registerPresence();
 }
+
 
 // ── UTILS ─────────────────────────────
 function timeAgo(iso) {
