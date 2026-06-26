@@ -1077,10 +1077,40 @@ let dmWarned = false;
 
 // Google Auth State
 let googleUser = null;
+const SESSION_KEY = 'posthub_session';
+
+// Sign-in only ever set googleUser in memory, so a page reload always
+// landed back on "Sign in" even though the person never logged out.
+// These three functions are the single place session data is written to
+// and read from localStorage, so every sign-in path (One Tap, OAuth
+// popup) and logout stay in sync with what's persisted.
+function saveSession(user) {
+  try { localStorage.setItem(SESSION_KEY, JSON.stringify(user)); } catch (e) {}
+}
+
+function clearSession() {
+  try { localStorage.removeItem(SESSION_KEY); } catch (e) {}
+}
+
+function restoreSession() {
+  let saved = null;
+  try { saved = JSON.parse(localStorage.getItem(SESSION_KEY) || 'null'); } catch (e) {}
+  if (saved && saved.id && saved.name) {
+    // Skip the "Welcome/toast" side effects of a fresh sign-in — this is
+    // just restoring a session that was already active.
+    googleUser = { email: saved.email, name: saved.name, picture: saved.picture, id: saved.id };
+    chatUserId = 'usr_' + googleUser.id.substring(0, 16);
+    chatUserName = googleUser.name;
+    chatUserEmail = googleUser.email;
+    chatUserPhoto = googleUser.picture;
+    updateUserUI();
+  }
+}
 
 // ── INIT ──────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   applyStoredTheme();
+  restoreSession();
 
   loadPosts();
   setInterval(loadPosts, 15000);
@@ -1183,6 +1213,8 @@ function logOut(e) {
     google.accounts.id.disableAutoSelect();
   }
 
+  clearSession();
+
   googleUser = null;
   chatUserId = null;
   chatUserName = null;
@@ -1223,6 +1255,7 @@ function setSignedInUser(profile) {
   chatUserEmail = googleUser.email;
   chatUserPhoto = googleUser.picture;
 
+  saveSession(googleUser);
   updateUserUI();
   closeGoogleSignIn();
   toast(`Welcome, ${googleUser.name}!`, 'ok');
