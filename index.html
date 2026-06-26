@@ -1202,7 +1202,10 @@ function logOut(e) {
   currentThread = null;
   lastMessageId = null;
 
-  document.getElementById('userInitial').textContent = '?';
+  // Reset the avatar's whole contents in one go — don't assume a child
+  // #userInitial span still exists, since sign-in replaces it with an
+  // <img> when the user has a profile photo. Reaching for that stale id
+  // here would throw and abort the rest of this function.
   document.getElementById('userAvatarTop').innerHTML = '<span id="userInitial">?</span>';
   document.getElementById('userNameTop').textContent = 'Sign in';
 
@@ -1213,15 +1216,15 @@ function logOut(e) {
 }
 
 // ── GOOGLE SIGN-IN ────────────────────
-function handleGoogleSignIn(response) {
-  const token = response.credential;
-  const decoded = jwt_decode(token);
-
+// Single source of truth for "the user is now signed in" — both the
+// One Tap / ID-token flow and the OAuth2 popup fallback funnel into this,
+// so neither path can silently leave the UI stuck on "Sign in".
+function setSignedInUser(profile) {
   googleUser = {
-    email: decoded.email,
-    name: decoded.name,
-    picture: decoded.picture,
-    id: decoded.sub
+    email: profile.email,
+    name: profile.name,
+    picture: profile.picture,
+    id: profile.id
   };
 
   chatUserId = 'usr_' + googleUser.id.substring(0, 16);
@@ -1234,6 +1237,21 @@ function handleGoogleSignIn(response) {
   toast(`Welcome, ${googleUser.name}!`, 'ok');
 }
 
+function handleGoogleSignIn(response) {
+  const decoded = jwt_decode(response.credential);
+  setSignedInUser({
+    email: decoded.email,
+    name: decoded.name,
+    picture: decoded.picture,
+    id: decoded.sub
+  });
+}
+
+function resetSignInButton() {
+  const btn = document.getElementById('googleSignInBtn');
+  if (btn) { btn.innerHTML = googleBtnInner(); btn.disabled = false; }
+}
+
 function triggerGoogleSignIn() {
   const btn = document.getElementById('googleSignInBtn');
   if (btn) { btn.textContent = 'Opening Google…'; btn.disabled = true; }
@@ -1241,26 +1259,75 @@ function triggerGoogleSignIn() {
   if (typeof google === 'undefined' || !google.accounts) {
     // GSI not loaded yet — wait and retry
     setTimeout(() => {
-      if (btn) { btn.innerHTML = googleBtnInner(); btn.disabled = false; }
+      resetSignInButton();
       toast('Google sign-in not ready yet, try again', 'err');
     }, 1000);
     return;
   }
 
-  // prompt() shows the One Tap / account picker popup
+  // prompt() shows the One Tap UI when it's allowed to display. Many
+  // browsers (in-app browsers, repeat visits, etc.) suppress it silently —
+  // isNotDisplayed()/isSkippedMoment() is how we detect that and need to
+  // fall back to a real popup flow instead of leaving sign-in half-done.
   google.accounts.id.prompt(notification => {
-    if (btn) { btn.innerHTML = googleBtnInner(); btn.disabled = false; }
     if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-      // One Tap was suppressed (e.g. user previously dismissed it).
-      // Fall back to the full OAuth redirect flow.
-      const client = google.accounts.oauth2.initTokenClient({
-        client_id: GOOGLE_CLIENT_ID,
-        scope: 'email profile openid',
-        callback: () => {}
-      });
-      client.requestAccessToken();
+      startOAuthPopupSignIn();
+    } else {
+      // One Tap displayed — handleGoogleSignIn will fire via the
+      // configured callback if the person completes it. Restore the
+      // button in case they dismiss it instead.
+      resetSignInButton();
     }
   });
+}
+
+// Fallback when One Tap can't show: a real OAuth2 popup that gets an
+// access token, then fetches the profile and completes sign-in the same
+// way the One Tap path does. The previous version requested a token and
+// threw it away (empty callback), which is why "Continue with Google"
+// could look like it worked but never actually signed anyone in.
+function startOAuthPopupSignIn() {
+  if (!google.accounts.oauth2) {
+    resetSignInButton();
+    toast('Google sign-in unavailable, try again', 'err');
+    return;
+  }
+
+  const client = google.accounts.oauth2.initTokenClient({
+    client_id: GOOGLE_CLIENT_ID,
+    scope: 'email profile openid',
+    callback: async (tokenResponse) => {
+      try {
+        if (!tokenResponse || !tokenResponse.access_token) {
+          throw new Error('No access token returned');
+        }
+        const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+          headers: { Authorization: `Bearer ${tokenResponse.access_token}` }
+        });
+        if (!res.ok) throw new Error('Failed to fetch Google profile');
+        const profile = await res.json();
+        setSignedInUser({
+          email: profile.email,
+          name: profile.name,
+          picture: profile.picture,
+          id: profile.sub
+        });
+      } catch (e) {
+        console.error('OAuth sign-in failed', e);
+        toast('Sign-in failed, please try again', 'err');
+      } finally {
+        resetSignInButton();
+      }
+    },
+    error_callback: (err) => {
+      console.error('OAuth popup error', err);
+      resetSignInButton();
+      if (err.type !== 'popup_closed') {
+        toast('Sign-in failed, please try again', 'err');
+      }
+    }
+  });
+  client.requestAccessToken();
 }
 
 function googleBtnInner() {
