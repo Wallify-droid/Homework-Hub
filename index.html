@@ -378,35 +378,148 @@ body {
   left: var(--sidebar-w);
   right: 0;
   bottom: 0;
-  background: var(--surface);
+  background: var(--bg);
   border-radius: 0;
   border: none;
   overflow: hidden;
   z-index: 150;
 }
 
-.chat-layout { display: flex; height: 100%; }
-
-.chat-sidebar {
-  width: 240px;
-  border-right: 1px solid var(--border);
-  background: var(--bg);
-  overflow-y: auto;
-  padding: 16px;
+/* List view: full list of people, native-messages-app style */
+.chat-list-view {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  height: 100%;
+  background: var(--bg);
+}
+
+.chat-list-header {
+  padding: 18px 20px 12px;
   flex-shrink: 0;
 }
 
-.chat-main {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  background: var(--bg);
-  height: 100%;
+.chat-list-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
 }
+
+.chat-list {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.chat-list-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 14px 20px;
+  cursor: pointer;
+  transition: background 0.15s;
+  border-bottom: 1px solid var(--border);
+}
+
+.chat-list-row:hover { background: var(--surface); }
+
+.chat-list-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  color: var(--accent);
+  font-size: 17px;
+  text-transform: uppercase;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.chat-list-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+.chat-list-body { flex: 1; min-width: 0; }
+
+.chat-list-top-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 3px;
+}
+
+.chat-list-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chat-list-time {
+  font-size: 12px;
+  color: var(--text3);
+  flex-shrink: 0;
+}
+
+.chat-list-preview-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.chat-list-preview {
+  font-size: 13px;
+  color: var(--text2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chat-list-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex-shrink: 0;
+}
+
+.chat-list-empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text3);
+  font-size: 14px;
+}
+
+/* Thread view: an open 1:1 conversation, hidden until a person is tapped */
+.chat-thread-view {
+  display: none;
+  flex-direction: column;
+  height: 100%;
+  background: var(--bg);
+}
+
+.chat-thread-view.open { display: flex; }
+.chat-list-view.hidden { display: none; }
+
+.chat-back-btn {
+  background: none;
+  border: none;
+  color: var(--text);
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 50%;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+.chat-back-btn:hover { background: var(--surface2); }
 
 .chat-thread-header {
   display: flex;
@@ -576,77 +689,6 @@ body {
   padding: 0 4px;
 }
 
-.people-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background 0.15s;
-  border: 1px solid transparent;
-}
-
-.people-item:hover {
-  background: var(--surface2);
-}
-
-.people-item.active {
-  background: var(--surface2);
-  border-color: var(--accent);
-}
-
-.people-item.active .people-name {
-  color: var(--accent);
-}
-
-.people-avatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  color: var(--accent);
-  font-size: 13px;
-  text-transform: uppercase;
-  flex-shrink: 0;
-  overflow: hidden;
-}
-
-.people-avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.people-name {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  min-width: 0;
-}
-
-.people-status {
-  font-size: 11px;
-  color: #3ecf8e;
-}
-
-.chat-section-title {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text3);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  padding: 4px 4px 0;
-}
-
 /* ── MODALS & OVERLAYS ── */
 .overlay {
   position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 300; display: none; align-items: center; justify-content: center; overflow-y: auto; padding: 20px;
@@ -724,56 +766,6 @@ body {
   .overlay { padding: 10px; }
 
   .chat-container { left: 0; top: var(--nav-h); bottom: 64px; }
-  .chat-layout { flex-direction: column; }
-
-  .chat-sidebar {
-    width: 100%;
-    height: auto;
-    max-height: 96px;
-    border-right: none;
-    border-bottom: 1px solid var(--border);
-    padding: 10px 12px;
-    flex-direction: row;
-    align-items: center;
-    overflow-x: auto;
-    overflow-y: hidden;
-    gap: 10px;
-    scrollbar-width: none;
-  }
-  .chat-sidebar::-webkit-scrollbar { display: none; }
-  .chat-section-title { display: none; }
-  .chat-sidebar-divider { display: none; }
-
-  #peopleList {
-    display: flex !important;
-    flex-direction: row !important;
-    gap: 10px;
-    flex-shrink: 0;
-  }
-
-  .people-item {
-    flex-direction: column;
-    gap: 4px;
-    text-align: center;
-    padding: 6px 8px;
-    flex-shrink: 0;
-    min-width: 56px;
-  }
-  .people-item .people-name { font-size: 10px; max-width: 56px; }
-  .people-item .people-status { display: none; }
-
-  #groupChatItem {
-    flex-shrink: 0;
-    flex-direction: column;
-    gap: 4px;
-    text-align: center;
-    padding: 6px 8px;
-    min-width: 56px;
-  }
-  #groupChatItem .people-name { font-size: 10px; }
-  #groupChatItem .people-status { display: none; }
-
-  .chat-main { height: auto; flex: 1; min-height: 0; }
   .chat-messages { padding: 14px; }
   .chat-msg { max-width: 85%; }
 
@@ -899,32 +891,31 @@ body {
     </div>
 
     <div id="chatContainer" class="chat-container">
-      <div class="chat-layout">
-        <div class="chat-sidebar">
-          <div class="chat-section-title">Conversations</div>
-          <div class="people-item active" id="groupChatItem" onclick="openGroupChat()">
-            <div class="people-avatar" style="color:var(--text);">#</div>
-            <div>
-              <div class="people-name">Group Chat</div>
-              <div class="people-status">Everyone</div>
-            </div>
-          </div>
-          <div class="chat-sidebar-divider" style="height: 1px; background: var(--border); margin: 4px 0;"></div>
-          <div class="chat-section-title">Active People</div>
-          <div id="peopleList" style="display:flex; flex-direction:column; gap:8px;"><div style="color:var(--text3); font-size:12px;">Loading…</div></div>
+      <!-- LIST VIEW: full list of people, like a native messages app -->
+      <div class="chat-list-view" id="chatListView">
+        <div class="chat-list-header">
+          <div class="chat-list-title">Chat</div>
         </div>
-        <div class="chat-main">
-          <div class="chat-thread-header">
-            <div class="chat-thread-avatar" id="chatThreadAvatar">#</div>
-            <div class="chat-thread-name" id="chatThreadName">Group Chat</div>
-          </div>
-          <div class="chat-messages" id="chatMessages">
-            <div style="text-align:center; padding: 40px; color: var(--text3);">Loading messages...</div>
-          </div>
-          <div class="chat-input-area">
-            <input type="text" id="chatInput" placeholder="Say something…" onkeypress="if(event.key==='Enter') sendChatMessage()">
-            <button onclick="sendChatMessage()">Send</button>
-          </div>
+        <div id="peopleList" class="chat-list">
+          <div style="color:var(--text3); font-size:13px; padding:20px; text-align:center;">Loading…</div>
+        </div>
+      </div>
+
+      <!-- THREAD VIEW: an open 1:1 conversation -->
+      <div class="chat-thread-view" id="chatThreadView">
+        <div class="chat-thread-header">
+          <button class="chat-back-btn" onclick="closeThread()" aria-label="Back">
+            <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+          </button>
+          <div class="chat-thread-avatar" id="chatThreadAvatar">?</div>
+          <div class="chat-thread-name" id="chatThreadName">–</div>
+        </div>
+        <div class="chat-messages" id="chatMessages">
+          <div style="text-align:center; padding: 40px; color: var(--text3);">Loading messages...</div>
+        </div>
+        <div class="chat-input-area">
+          <input type="text" id="chatInput" placeholder="Say something…" onkeypress="if(event.key==='Enter') sendChatMessage()">
+          <button onclick="sendChatMessage()">Send</button>
         </div>
       </div>
     </div>
@@ -1723,15 +1714,14 @@ function setFilter(f) {
     document.getElementById('chips').style.display = 'none';
     document.getElementById('chatContainer').style.display = 'block';
 
+    // Always land on the people list, not a previously open thread.
+    closeThread();
     renderChatUsers();
 
     if (!googleUser) {
       openGoogleSignIn();
     } else {
-      initChat().then(() => {
-        const box = document.getElementById('chatMessages');
-        setTimeout(() => { box.scrollTop = box.scrollHeight; }, 100);
-      });
+      initChat();
     }
   } else {
     document.getElementById('grid').style.display = 'grid';
@@ -1779,29 +1769,73 @@ async function subscribeToActiveUsers() {
     .subscribe();
 }
 
+// Most recent DM exchanged with a given person (either direction), used
+// for the list-row preview text/time, native-messages-app style.
+function lastMessageWith(uid) {
+  let last = null;
+  for (const m of chatMessages) {
+    const toUid = m.to_uid ?? null;
+    const isWithThisPerson = (m.uid === chatUserId && toUid === uid) || (m.uid === uid && toUid === chatUserId);
+    if (!isWithThisPerson) continue;
+    if (!last || new Date(m.created_at) > new Date(last.created_at)) last = m;
+  }
+  return last;
+}
+
+function formatListTime(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  const now = new Date();
+  const sameDay = d.toDateString() === now.toDateString();
+  if (sameDay) return d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+  const diffDays = Math.floor((now - d) / 86400000);
+  if (diffDays < 7) return d.toLocaleDateString([], { weekday: 'short' });
+  return d.toLocaleDateString([], { month: 'short', day: 'numeric' });
+}
+
 function renderChatUsers() {
   const list = document.getElementById('peopleList');
   const others = chatUsers.filter(u => u.uid !== chatUserId);
 
   if (!others.length) {
-    list.innerHTML = '<div style="color:var(--text3); font-size:12px;">No one online yet.</div>';
+    list.innerHTML = '<div class="chat-list-empty">No one else has joined yet.</div>';
     return;
   }
 
-  list.innerHTML = others.map(u => `
-    <div class="people-item${currentThread && currentThread.uid === u.uid ? ' active' : ''}" onclick='openDM(${JSON.stringify({ uid: u.uid, name: u.name, photo: u.photo })})'>
-      <div class="people-avatar">
-        ${u.photo ? `<img src="${esc(u.photo)}" alt="${esc(u.name)}">` : esc((u.name || '?').charAt(0).toUpperCase())}
-      </div>
-      <div>
-        <div class="people-name">${esc(u.name || 'Unknown')}</div>
-        <div class="people-status">Active</div>
-      </div>
-    </div>
-  `).join('');
+  list.innerHTML = others.map(u => {
+    const last = lastMessageWith(u.uid);
+    const preview = last ? esc(last.text || '') : 'Tap to start chatting';
+    const timeStr = last ? formatListTime(last.created_at) : '';
+    // Unread = their most recent message to me hasn't been seen yet
+    // (tracked client-side via readThreads, reset whenever I open the thread).
+    const isUnread = last && last.uid === u.uid && !readThreads.has(u.uid + ':' + last.created_at);
+
+    return `
+      <div class="chat-list-row" onclick='openDM(${JSON.stringify({ uid: u.uid, name: u.name, photo: u.photo })})'>
+        <div class="chat-list-avatar">
+          ${u.photo ? `<img src="${esc(u.photo)}" alt="${esc(u.name)}">` : esc((u.name || '?').charAt(0).toUpperCase())}
+        </div>
+        <div class="chat-list-body">
+          <div class="chat-list-top-row">
+            <div class="chat-list-name">${esc(u.name || 'Unknown')}</div>
+            ${timeStr ? `<div class="chat-list-time">${timeStr}</div>` : ''}
+          </div>
+          <div class="chat-list-preview-row">
+            <div class="chat-list-preview">${preview}</div>
+            ${isUnread ? `<div class="chat-list-dot"></div>` : ''}
+          </div>
+        </div>
+      </div>`;
+  }).join('');
 }
 
-// ── THREAD SWITCHING ──────────────────
+// ── THREAD SWITCHING (list <-> open 1:1 conversation) ──────────
+// Tracks which (person, lastMessageTimestamp) pairs the current user has
+// already seen, purely client-side, so the unread dot clears once a
+// thread is opened. Doesn't persist across reloads — good enough for a
+// lightweight "have I seen this" indicator without a schema change.
+const readThreads = new Set();
+
 function updateThreadHeader() {
   const avatar = document.getElementById('chatThreadAvatar');
   const name = document.getElementById('chatThreadName');
@@ -1810,18 +1844,7 @@ function updateThreadHeader() {
       ? `<img src="${esc(currentThread.photo)}" alt="${esc(currentThread.name)}">`
       : esc((currentThread.name || '?').charAt(0).toUpperCase());
     name.textContent = currentThread.name || 'Unknown';
-  } else {
-    avatar.textContent = '#';
-    name.textContent = 'Group Chat';
   }
-  document.getElementById('groupChatItem').classList.toggle('active', !currentThread);
-  renderChatUsers();
-}
-
-function openGroupChat() {
-  currentThread = null;
-  updateThreadHeader();
-  renderChatMessages();
 }
 
 function openDM(person) {
@@ -1830,8 +1853,22 @@ function openDM(person) {
     return;
   }
   currentThread = { uid: person.uid, name: person.name, photo: person.photo };
+
+  const last = lastMessageWith(person.uid);
+  if (last) readThreads.add(person.uid + ':' + last.created_at);
+
   updateThreadHeader();
   renderChatMessages();
+
+  document.getElementById('chatListView').classList.add('hidden');
+  document.getElementById('chatThreadView').classList.add('open');
+}
+
+function closeThread() {
+  currentThread = null;
+  document.getElementById('chatThreadView').classList.remove('open');
+  document.getElementById('chatListView').classList.remove('hidden');
+  renderChatUsers();
 }
 
 // ── CHAT ──────────────────────────────
@@ -1858,6 +1895,7 @@ async function fetchMessages() {
       }
       lastMessageId = msgs[msgs.length - 1].id;
       renderChatMessages();
+      renderChatUsers(); // keep list previews/unread dots current
     } else if (!lastMessageId) {
       // First load returned empty
       renderChatMessages();
@@ -1894,6 +1932,7 @@ async function initChat() {
           chatMessages.push(m);
           lastMessageId = m.id;
           renderChatMessages();
+          renderChatUsers();
         }
       })
       .subscribe();
