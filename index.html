@@ -3,9 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>PostHub</title>
+<title>FostHub</title>
 <script>
-  // Called automatically by GSI as soon as the library is ready
   window.onGoogleLibraryLoad = function() {
     google.accounts.id.initialize({
       client_id: '680651504799-pc0krkiavrudqc5mjlbi0g44g6ntirkp.apps.googleusercontent.com',
@@ -13,8 +12,6 @@
       auto_select: false,
       cancel_on_tap_outside: false
     });
-    // Show One Tap automatically if user is not signed in yet
-    // (will silently no-op if they've previously dismissed it)
     google.accounts.id.prompt();
   };
 </script>
@@ -85,9 +82,7 @@ body {
   overflow: hidden;
   transition: border-color 0.2s;
 }
-
 .topbar-search:focus-within { border-color: var(--accent); }
-
 .topbar-search input {
   flex: 1;
   background: transparent;
@@ -99,7 +94,6 @@ body {
   min-width: 0;
 }
 .topbar-search input::placeholder { color: var(--text3); }
-
 .topbar-search button {
   background: var(--surface2);
   border: none;
@@ -135,6 +129,8 @@ body {
   white-space: nowrap;
 }
 .btn-upload-top:hover { background: var(--border); }
+/* Hidden when on chat tab */
+.btn-upload-top.hidden { display: none; }
 
 .user-menu {
   display: flex;
@@ -151,143 +147,70 @@ body {
 .user-menu:hover { background: var(--border); }
 
 .user-avatar {
-  width: 32px;
-  height: 32px;
+  width: 32px; height: 32px;
   border-radius: 50%;
   background: var(--accent);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #000;
-  font-weight: bold;
-  font-size: 14px;
-  flex-shrink: 0;
-  overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+  color: #000; font-weight: bold; font-size: 14px;
+  flex-shrink: 0; overflow: hidden;
 }
-
-.user-avatar img {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  object-fit: cover;
-}
+.user-avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
 
 .user-dropdown {
   position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
+  top: calc(100% + 8px); right: 0;
   background: var(--surface2);
   border: 1px solid var(--border);
   border-radius: 10px;
   min-width: 180px;
   box-shadow: 0 8px 24px rgba(0,0,0,0.5);
-  z-index: 500;
-  overflow: hidden;
-  display: none;
+  z-index: 500; overflow: hidden; display: none;
 }
 .user-dropdown.open { display: block; }
 
 .user-dropdown-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px 16px;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--text);
-  cursor: pointer;
-  transition: background 0.15s;
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 16px; font-size: 14px; font-weight: 500;
+  color: var(--text); cursor: pointer; transition: background 0.15s;
 }
 .user-dropdown-item:hover { background: var(--border); }
 .user-dropdown-item.danger { color: var(--red); }
 .user-dropdown-divider { height: 1px; background: var(--border); }
 
-.theme-options {
-  display: none;
-  flex-direction: column;
-  padding: 6px 0;
-  background: var(--bg);
-}
+.theme-options { display: none; flex-direction: column; padding: 6px 0; background: var(--bg); }
 .theme-options.open { display: flex; }
 .theme-options .user-dropdown-item { padding-left: 30px; font-size: 13px; }
 .theme-options .user-dropdown-item.active { color: var(--accent); }
 
 /* ── LAYOUT ── */
-.layout {
-  display: flex;
-  margin-top: var(--nav-h);
-}
+.layout { display: flex; margin-top: var(--nav-h); }
 
 /* ── SIDEBAR ── */
 .sidebar {
   width: var(--sidebar-w);
   min-height: calc(100vh - var(--nav-h));
-  position: fixed;
-  top: var(--nav-h);
-  left: 0;
-  background: var(--bg);
-  padding: 12px 0;
+  position: fixed; top: var(--nav-h); left: 0;
+  background: var(--bg); padding: 12px 0;
   border-right: 1px solid var(--border);
-  overflow-y: auto;
-  z-index: 100;
+  overflow-y: auto; z-index: 100;
 }
 
 .sidebar-item {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 10px 16px;
-  cursor: pointer;
-  border-radius: 6px;
-  margin: 0 8px;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text2);
+  display: flex; align-items: center; gap: 14px;
+  padding: 10px 16px; cursor: pointer;
+  border-radius: 6px; margin: 0 8px;
+  font-size: 13px; font-weight: 500; color: var(--text2);
   transition: background 0.15s, color 0.15s;
 }
-
 .sidebar-item:hover, .sidebar-item.active { background: var(--surface2); color: var(--text); }
 .sidebar-icon { font-size: 18px; width: 22px; text-align: center; }
-
 .sidebar-divider { height: 1px; background: var(--border); margin: 12px 0; }
 .sidebar-section-title { padding: 6px 20px; font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.8px; }
 
 /* ── MAIN CONTENT ── */
-.main {
-  margin-left: var(--sidebar-w);
-  padding: 24px;
-  flex: 1;
-  min-width: 0;
-}
+.main { margin-left: var(--sidebar-w); padding: 24px; flex: 1; min-width: 0; }
 
-/* Category chips */
-.chips {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  padding-bottom: 12px;
-  margin-bottom: 20px;
-  scrollbar-width: none;
-}
-.chips::-webkit-scrollbar { display: none; }
-
-.chip {
-  padding: 6px 14px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 40px;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text2);
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all 0.15s;
-  user-select: none;
-}
-.chip:hover { background: var(--surface2); color: var(--text); }
-.chip.active { background: var(--text); color: var(--bg); border-color: var(--text); }
-
-/* Feed (YouTube-style single column) */
+/* Feed */
 .grid {
   display: flex;
   flex-direction: column;
@@ -295,98 +218,48 @@ body {
   margin: 0 auto;
 }
 
-/* Post row */
-.card {
-  cursor: pointer;
-  border-bottom: 8px solid var(--bg);
-}
+.card { cursor: pointer; border-bottom: 8px solid var(--bg); }
 .card:last-child { border-bottom: none; }
 
 .card-thumb {
-  width: 100%;
-  aspect-ratio: 16/9;
-  background: var(--surface);
-  overflow: hidden;
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  width: 100%; aspect-ratio: 16/9;
+  background: var(--surface); overflow: hidden;
+  position: relative; display: flex;
+  align-items: center; justify-content: center;
 }
-
-.card-thumb-preview {
-  width: 100%;
-  height: 100%;
-  border: none;
-  pointer-events: none;
-  transform-origin: top left;
-  overflow: hidden;
-}
-
+.card-thumb-preview { width: 100%; height: 100%; border: none; pointer-events: none; }
 .card-thumb-icon { font-size: 40px; opacity: 0.25; }
-
 .card-type-badge {
-  position: absolute;
-  bottom: 8px;
-  right: 8px;
-  background: rgba(0,0,0,0.8);
-  color: white;
-  font-size: 11px;
-  font-weight: 600;
-  padding: 2px 6px;
-  border-radius: 3px;
+  position: absolute; bottom: 8px; right: 8px;
+  background: rgba(0,0,0,0.8); color: white;
+  font-size: 11px; font-weight: 600;
+  padding: 2px 6px; border-radius: 3px;
 }
 
-.card-info {
-  padding: 12px 14px 16px;
-  display: flex;
-  gap: 12px;
-  align-items: flex-start;
-}
-
+.card-info { padding: 12px 14px 16px; display: flex; gap: 12px; align-items: flex-start; }
 .card-avatar {
   width: 38px; height: 38px; border-radius: 50%;
   background: var(--surface2); border: 1px solid var(--border);
   display: flex; align-items: center; justify-content: center;
-  font-size: 14px; font-weight: 700; color: var(--accent); flex-shrink: 0; text-transform: uppercase;
-  overflow: hidden;
-  margin-top: 1px;
+  font-size: 14px; font-weight: 700; color: var(--accent);
+  flex-shrink: 0; text-transform: uppercase; overflow: hidden; margin-top: 1px;
 }
-
-.card-avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
+.card-avatar img { width: 100%; height: 100%; object-fit: cover; }
 .card-meta { flex: 1; min-width: 0; }
 .card-title {
-  font-size: 15px;
-  font-weight: 500;
-  color: var(--text);
-  line-height: 1.35;
-  margin-bottom: 4px;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  word-break: break-word;
+  font-size: 15px; font-weight: 500; color: var(--text);
+  line-height: 1.35; margin-bottom: 4px;
+  display: -webkit-box; -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical; overflow: hidden; word-break: break-word;
 }
 .card-subline { font-size: 13px; color: var(--text2); line-height: 1.4; }
 .card-subline .dot { margin: 0 4px; }
 
 .card-kebab {
-  flex-shrink: 0;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text2);
-  cursor: pointer;
-  border-radius: 50%;
-  transition: background 0.15s;
-  margin-top: -4px;
-  margin-right: -6px;
+  flex-shrink: 0; width: 32px; height: 32px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text2); cursor: pointer; border-radius: 50%;
+  transition: background 0.15s; margin-top: -4px; margin-right: -6px;
 }
 .card-kebab:hover { background: var(--surface2); }
 
@@ -394,368 +267,194 @@ body {
 .state-msg { text-align: center; padding: 60px 20px; color: var(--text3); }
 .state-msg .ico { font-size: 52px; margin-bottom: 12px; opacity: 0.4; }
 .state-msg p { font-size: 15px; }
-
 .spinner-wrap { display: flex; justify-content: center; padding: 60px; }
 .spinner { width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.75s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ── CHAT UI ── */
+/* ── CHAT ── */
 .chat-container {
   display: none;
   position: fixed;
-  top: var(--nav-h);
-  left: var(--sidebar-w);
-  right: 0;
-  bottom: 0;
-  background: var(--bg);
-  border-radius: 0;
-  border: none;
-  overflow: hidden;
-  z-index: 150;
+  top: var(--nav-h); left: var(--sidebar-w); right: 0; bottom: 0;
+  background: var(--bg); overflow: hidden; z-index: 150;
 }
 
-/* List view: full list of people, native-messages-app style */
-.chat-list-view {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  background: var(--bg);
-}
-
-.chat-list-header {
-  padding: 18px 20px 12px;
-  flex-shrink: 0;
-}
-
-.chat-list-title {
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--text);
-}
-
-.chat-list {
-  flex: 1;
-  overflow-y: auto;
-}
+.chat-list-view { display: flex; flex-direction: column; height: 100%; background: var(--bg); }
+.chat-list-header { padding: 18px 20px 12px; flex-shrink: 0; }
+.chat-list-title { font-size: 22px; font-weight: 700; color: var(--text); }
+.chat-list { flex: 1; overflow-y: auto; }
 
 .chat-list-row {
-  display: flex;
-  align-items: flex-start;
-  gap: 14px;
-  padding: 14px 20px;
-  cursor: pointer;
-  transition: background 0.15s;
-  border-bottom: 1px solid var(--border);
+  display: flex; align-items: flex-start; gap: 14px;
+  padding: 14px 20px; cursor: pointer;
+  transition: background 0.15s; border-bottom: 1px solid var(--border);
 }
-
 .chat-list-row:hover { background: var(--surface); }
 
 .chat-list-avatar {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  color: var(--accent);
-  font-size: 17px;
-  text-transform: uppercase;
-  flex-shrink: 0;
-  overflow: hidden;
+  width: 48px; height: 48px; border-radius: 50%;
+  background: var(--surface2); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: bold; color: var(--accent); font-size: 17px;
+  text-transform: uppercase; flex-shrink: 0; overflow: hidden;
 }
 .chat-list-avatar img { width: 100%; height: 100%; object-fit: cover; }
 
 .chat-list-body { flex: 1; min-width: 0; }
+.chat-list-top-row { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 3px; }
+.chat-list-name { font-size: 15px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.chat-list-time { font-size: 12px; color: var(--text3); flex-shrink: 0; }
+.chat-list-preview-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.chat-list-preview { font-size: 13px; color: var(--text2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.chat-list-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+.chat-list-empty { text-align: center; padding: 60px 20px; color: var(--text3); font-size: 14px; }
 
-.chat-list-top-row {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 3px;
-}
-
-.chat-list-name {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--text);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.chat-list-time {
-  font-size: 12px;
-  color: var(--text3);
-  flex-shrink: 0;
-}
-
-.chat-list-preview-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-}
-
-.chat-list-preview {
-  font-size: 13px;
-  color: var(--text2);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.chat-list-dot {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background: var(--accent);
-  flex-shrink: 0;
-}
-
-.chat-list-empty {
-  text-align: center;
-  padding: 60px 20px;
-  color: var(--text3);
-  font-size: 14px;
-}
-
-/* Thread view: an open 1:1 conversation, hidden until a person is tapped */
-.chat-thread-view {
-  display: none;
-  flex-direction: column;
-  height: 100%;
-  background: var(--bg);
-}
-
+.chat-thread-view { display: none; flex-direction: column; height: 100%; background: var(--bg); }
 .chat-thread-view.open { display: flex; }
 .chat-list-view.hidden { display: none; }
 
 .chat-back-btn {
-  background: none;
-  border: none;
-  color: var(--text);
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  border-radius: 50%;
-  flex-shrink: 0;
+  background: none; border: none; color: var(--text);
+  width: 32px; height: 32px; display: flex;
+  align-items: center; justify-content: center;
+  cursor: pointer; border-radius: 50%; flex-shrink: 0;
   transition: background 0.15s;
 }
 .chat-back-btn:hover { background: var(--surface2); }
 
 .chat-thread-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 16px;
-  border-bottom: 1px solid var(--border);
-  flex-shrink: 0;
-  background: var(--surface);
+  display: flex; align-items: center; gap: 10px;
+  padding: 16px; border-bottom: 1px solid var(--border);
+  flex-shrink: 0; background: var(--surface);
 }
-
 .chat-thread-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  color: var(--accent);
-  font-size: 14px;
-  text-transform: uppercase;
-  flex-shrink: 0;
-  overflow: hidden;
+  width: 40px; height: 40px; border-radius: 50%;
+  background: var(--surface2); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: bold; color: var(--accent); font-size: 14px;
+  text-transform: uppercase; flex-shrink: 0; overflow: hidden;
 }
-
-.chat-thread-avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.chat-thread-name {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--text);
-}
+.chat-thread-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.chat-thread-name { font-size: 15px; font-weight: 600; color: var(--text); }
 
 .chat-messages {
-  flex: 1;
-  overflow-y: auto;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  min-height: 0;
+  flex: 1; overflow-y: auto; padding: 20px;
+  display: flex; flex-direction: column; gap: 14px; min-height: 0;
 }
 
 .chat-input-area {
-  padding: 12px 16px;
-  border-top: 1px solid var(--border);
-  display: flex;
-  gap: 10px;
-  background: var(--surface);
-  align-items: flex-end;
-  flex-shrink: 0;
+  padding: 12px 16px; border-top: 1px solid var(--border);
+  display: flex; gap: 10px; background: var(--surface);
+  align-items: flex-end; flex-shrink: 0;
 }
-
 .chat-input-area input {
-  flex: 1;
-  min-width: 0;
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  padding: 12px 16px;
-  border-radius: 20px;
-  color: var(--text);
-  font-size: 14px;
-  font-family: inherit;
+  flex: 1; min-width: 0;
+  background: var(--surface2); border: 1px solid var(--border);
+  padding: 12px 16px; border-radius: 20px;
+  color: var(--text); font-size: 14px; font-family: inherit;
   transition: border-color 0.2s;
 }
-
-.chat-input-area input:focus {
-  border-color: var(--accent);
-}
-
+.chat-input-area input:focus { border-color: var(--accent); }
 .chat-input-area button {
-  background: var(--accent);
-  border: none;
-  color: #000;
-  font-weight: 600;
-  padding: 10px 20px;
-  border-radius: 20px;
-  cursor: pointer;
-  transition: background 0.2s;
-  white-space: nowrap;
-  flex-shrink: 0;
+  background: var(--accent); border: none; color: #000;
+  font-weight: 600; padding: 10px 20px; border-radius: 20px;
+  cursor: pointer; transition: background 0.2s; white-space: nowrap; flex-shrink: 0;
 }
+.chat-input-area button:hover { background: var(--accent-hover); }
+.chat-input-area button:active { transform: scale(0.95); }
 
-.chat-input-area button:hover {
-  background: var(--accent-hover);
-}
-
-.chat-input-area button:active {
-  transform: scale(0.95);
-}
-
-.chat-msg {
-  max-width: 75%;
-  align-self: flex-start;
-  display: flex;
-  gap: 8px;
-  align-items: flex-end;
-}
-
-.chat-msg.me {
-  align-self: flex-end;
-  flex-direction: row-reverse;
-}
-
+.chat-msg { max-width: 75%; align-self: flex-start; display: flex; gap: 8px; align-items: flex-end; }
+.chat-msg.me { align-self: flex-end; flex-direction: row-reverse; }
 .chat-msg-avatar {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  color: var(--accent);
-  font-size: 11px;
-  text-transform: uppercase;
-  flex-shrink: 0;
-  overflow: hidden;
-  margin-bottom: 2px;
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--surface2); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: bold; color: var(--accent); font-size: 11px;
+  text-transform: uppercase; flex-shrink: 0; overflow: hidden; margin-bottom: 2px;
 }
 .chat-msg-avatar img { width: 100%; height: 100%; object-fit: cover; }
-
-.chat-msg-content {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-width: 0;
-}
-
-.chat-msg.me .chat-msg-content {
-  align-items: flex-end;
-}
-
-.chat-msg-name {
-  font-size: 11px;
-  color: var(--text3);
-  padding: 0 4px;
-}
-
+.chat-msg-content { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.chat-msg.me .chat-msg-content { align-items: flex-end; }
+.chat-msg-name { font-size: 11px; color: var(--text3); padding: 0 4px; }
 .chat-msg-bubble {
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  padding: 10px 14px;
-  border-radius: 16px;
-  font-size: 14px;
-  line-height: 1.4;
-  word-break: break-word;
+  background: var(--surface2); border: 1px solid var(--border);
+  padding: 10px 14px; border-radius: 16px;
+  font-size: 14px; line-height: 1.4; word-break: break-word;
 }
+.chat-msg.me .chat-msg-bubble { background: var(--accent); color: #000; border-color: var(--accent); }
+.chat-msg-time { font-size: 10px; color: var(--text3); padding: 0 4px; }
 
-.chat-msg.me .chat-msg-bubble {
-  background: var(--accent);
-  color: #000;
-  border-color: var(--accent);
-}
-
-.chat-msg-time {
-  font-size: 10px;
-  color: var(--text3);
-  padding: 0 4px;
-}
-
-/* ── MODALS & OVERLAYS ── */
+/* ── MODALS ── */
 .overlay {
-  position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 300; display: none; align-items: center; justify-content: center; overflow-y: auto; padding: 20px;
+  position: fixed; inset: 0; background: rgba(0,0,0,0.85);
+  z-index: 300; display: none; align-items: center;
+  justify-content: center; overflow-y: auto; padding: 20px;
 }
 .overlay.open { display: flex; }
 
-.viewer { background: var(--surface); border-radius: 10px; width: 100%; max-width: 900px; margin: auto; overflow: hidden; border: 1px solid var(--border); display: flex; flex-direction: column; }
-.viewer-topbar { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+.viewer {
+  background: var(--surface); border-radius: 10px;
+  width: 100%; max-width: 900px; margin: auto;
+  overflow: hidden; border: 1px solid var(--border);
+  display: flex; flex-direction: column;
+}
+.viewer-topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 20px; border-bottom: 1px solid var(--border); flex-shrink: 0;
+}
 .viewer-title { font-size: 15px; font-weight: 600; flex: 1; margin-right: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.viewer-close { background: var(--surface2); border: 1px solid var(--border); color: var(--text); width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; transition: background 0.15s; flex-shrink: 0; }
+.viewer-close {
+  background: var(--surface2); border: 1px solid var(--border); color: var(--text);
+  width: 32px; height: 32px; border-radius: 50%; cursor: pointer;
+  font-size: 18px; display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s; flex-shrink: 0;
+}
 .viewer-close:hover { background: var(--border); }
-
 .viewer-frame-wrap { width: 100%; aspect-ratio: 16/9; background: #000; position: relative; }
 .viewer-frame-wrap.html-app { aspect-ratio: unset; height: 75vh; }
 .viewer-frame-wrap iframe { width: 100%; height: 100%; border: none; display: block; }
-
 .viewer-text-only { padding: 40px 32px; font-size: 16px; line-height: 1.7; color: var(--text); white-space: pre-wrap; word-wrap: break-word; min-height: 200px; }
 .viewer-meta { padding: 20px; border-top: 1px solid var(--border); display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
-.viewer-avatar { width: 42px; height: 42px; border-radius: 50%; background: var(--surface2); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; color: var(--accent); text-transform: uppercase; flex-shrink: 0; overflow: hidden; }
+.viewer-avatar {
+  width: 42px; height: 42px; border-radius: 50%;
+  background: var(--surface2); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; font-weight: 700; color: var(--accent);
+  text-transform: uppercase; flex-shrink: 0; overflow: hidden;
+}
 .viewer-avatar img { width: 100%; height: 100%; object-fit: cover; }
 .viewer-author { font-size: 14px; font-weight: 600; }
 .viewer-date { font-size: 12px; color: var(--text3); margin-top: 2px; }
 .viewer-body { padding: 0 20px 20px; flex-shrink: 0; }
 .viewer-body-text { font-size: 14px; line-height: 1.6; color: var(--text2); white-space: pre-wrap; word-break: break-word; }
 
-.upload-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 400; display: none; align-items: center; justify-content: center; padding: 20px; }
+.upload-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.85);
+  z-index: 400; display: none; align-items: center; justify-content: center; padding: 20px;
+}
 .upload-overlay.open { display: flex; }
-.upload-modal { background: var(--surface); border-radius: 10px; width: 100%; max-width: 520px; border: 1px solid var(--border); overflow: hidden; }
+.upload-modal {
+  background: var(--surface); border-radius: 10px;
+  width: 100%; max-width: 520px; border: 1px solid var(--border); overflow: hidden;
+}
 .upload-header { display: flex; align-items: center; justify-content: space-between; padding: 18px 20px; border-bottom: 1px solid var(--border); }
 .upload-header h2 { font-size: 16px; font-weight: 600; }
 .upload-body { padding: 24px 20px; display: flex; flex-direction: column; gap: 16px; max-height: 70vh; overflow-y: auto; }
 
 .field label { display: block; font-size: 12px; font-weight: 600; color: var(--text2); margin-bottom: 7px; text-transform: uppercase; letter-spacing: 0.5px; }
-.field input, .field textarea { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 10px 14px; font-size: 14px; color: var(--text); font-family: inherit; transition: border-color 0.2s; }
+.field input, .field textarea {
+  width: 100%; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 6px; padding: 10px 14px; font-size: 14px; color: var(--text);
+  font-family: inherit; transition: border-color 0.2s;
+}
 .field input:focus, .field textarea:focus { border-color: var(--accent); }
 .field textarea { resize: vertical; min-height: 90px; }
 
-.dropzone { border: 2px dashed var(--border); border-radius: 8px; padding: 30px 20px; text-align: center; cursor: pointer; transition: border-color 0.2s, background 0.2s; color: var(--text2); }
+.dropzone {
+  border: 2px dashed var(--border); border-radius: 8px; padding: 30px 20px;
+  text-align: center; cursor: pointer;
+  transition: border-color 0.2s, background 0.2s; color: var(--text2);
+}
 .dropzone:hover, .dropzone.drag { border-color: var(--accent); background: rgba(62,166,255,0.05); }
 .dropzone .dz-icon { font-size: 36px; margin-bottom: 10px; opacity: 0.6; }
 .dropzone .dz-label { font-size: 14px; font-weight: 500; margin-bottom: 4px; }
@@ -773,36 +472,27 @@ body {
 
 /* Toast */
 .toast-wrap { position: fixed; bottom: 80px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; align-items: flex-end; pointer-events: none; }
-
-.post-menu {
-  position: fixed;
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  min-width: 170px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
-  z-index: 500;
-  overflow: hidden;
-  display: none;
+.toast {
+  background: var(--surface2); border: 1px solid var(--border); color: var(--text);
+  padding: 12px 18px; border-radius: 8px; font-size: 13px; font-weight: 500;
+  animation: toastIn 0.25s ease-out; max-width: 280px;
+  display: flex; align-items: center; gap: 8px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5); pointer-events: auto;
 }
-.post-menu.open { display: block; }
-.post-menu-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px 16px;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--text);
-  cursor: pointer;
-  transition: background 0.15s;
-}
-.post-menu-item:hover { background: var(--border); }
-.post-menu-item.danger { color: var(--red); }
-.toast { background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 12px 18px; border-radius: 8px; font-size: 13px; font-weight: 500; animation: toastIn 0.25s ease-out; max-width: 280px; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); pointer-events: auto; }
 .toast.ok { border-left: 3px solid #3ecf8e; }
 .toast.err { border-left: 3px solid var(--red); }
 @keyframes toastIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Post kebab menu */
+.post-menu {
+  position: fixed; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 10px; min-width: 170px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5); z-index: 500; overflow: hidden; display: none;
+}
+.post-menu.open { display: block; }
+.post-menu-item { display: flex; align-items: center; gap: 10px; padding: 12px 16px; font-size: 14px; font-weight: 500; color: var(--text); cursor: pointer; transition: background 0.15s; }
+.post-menu-item:hover { background: var(--border); }
+.post-menu-item.danger { color: var(--red); }
 
 .progress-bar { height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; margin-top: 8px; }
 .progress-bar-fill { height: 100%; background: var(--accent); width: 0%; transition: width 0.3s; }
@@ -813,51 +503,36 @@ body {
 
 @media (max-width: 768px) {
   .sidebar { display: none; }
-  .btn-upload-top { display: none; }
+  .btn-upload-top { display: none !important; }
   .topbar-search { display: none; }
   .main { margin-left: 0; padding: 0; padding-bottom: 90px; }
-  .chips { padding: 12px 12px 12px; margin-bottom: 0; }
   .grid { max-width: none; }
-
   .overlay { padding: 10px; }
-
   .chat-container { left: 0; top: var(--nav-h); bottom: 64px; }
   .chat-messages { padding: 14px; }
   .chat-msg { max-width: 85%; }
 
   .fab {
-    position: fixed;
-    bottom: 80px;
-    right: 16px;
-    width: 54px; height: 54px;
-    border-radius: 50%;
-    background: var(--accent);
-    color: #000;
+    position: fixed; bottom: 80px; right: 16px;
+    width: 54px; height: 54px; border-radius: 50%;
+    background: var(--accent); color: #000;
     display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-    z-index: 210;
-    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4); z-index: 210; cursor: pointer;
   }
+  /* FAB hidden on chat tab */
+  .fab.hidden { display: none; }
 
   .bottom-nav {
-    display: flex;
-    position: fixed;
-    bottom: 0; left: 0; right: 0;
-    height: 64px;
-    background: var(--surface);
-    border-top: 1px solid var(--border);
-    justify-content: space-around;
-    align-items: center;
-    z-index: 250;
+    display: flex; position: fixed; bottom: 0; left: 0; right: 0;
+    height: 64px; background: var(--surface); border-top: 1px solid var(--border);
+    justify-content: space-around; align-items: center; z-index: 250;
     padding-bottom: env(safe-area-inset-bottom);
   }
-
   .bottom-nav-item {
     display: flex; flex-direction: column; align-items: center; justify-content: center;
-    gap: 4px; color: var(--text2); cursor: pointer; flex: 1; height: 100%; transition: color 0.15s;
-    -webkit-tap-highlight-color: transparent;
+    gap: 4px; color: var(--text2); cursor: pointer; flex: 1; height: 100%;
+    transition: color 0.15s; -webkit-tap-highlight-color: transparent;
   }
-
   .bottom-nav-item.active { color: var(--accent); }
   .bottom-nav-item svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
   .bottom-nav-item span { font-size: 10px; font-weight: 600; }
@@ -866,9 +541,10 @@ body {
 </head>
 <body>
 
+<!-- TOPBAR -->
 <div class="topbar">
   <div class="topbar-logo" onclick="setFilter('all')">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="width: 26px; height: 26px;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="width:26px;height:26px;">
       <path d="M4 4h6a5 5 0 0 1 5 5v0a5 5 0 0 1-5 5H4v6"/>
     </svg>
   </div>
@@ -877,97 +553,61 @@ body {
     <button onclick="handleSearch()">🔍</button>
   </div>
   <div class="topbar-actions">
-    <button class="btn-upload-top" onclick="openUpload()">
-      + Create
-    </button>
+    <button class="btn-upload-top" id="btnCreate" onclick="openUpload()">+ Create</button>
     <div class="user-menu" id="userMenu" onclick="toggleUserMenu(event)">
-      <div class="user-avatar" id="userAvatarTop">
-        <span id="userInitial">?</span>
-      </div>
-      <span id="userNameTop" style="font-size:13px; font-weight:500;">Sign in</span>
-
+      <div class="user-avatar" id="userAvatarTop"><span id="userInitial">?</span></div>
+      <span id="userNameTop" style="font-size:13px;font-weight:500;">Sign in</span>
       <div class="user-dropdown" id="userDropdown">
-        <div class="user-dropdown-item" onclick="toggleThemeOptions(event)">
-          <span>🎨</span> Theme
-        </div>
+        <div class="user-dropdown-item" onclick="toggleThemeOptions(event)"><span>🎨</span> Theme</div>
         <div class="theme-options" id="themeOptions">
-          <div class="user-dropdown-item theme-choice active" data-theme="dark" onclick="setTheme(event, 'dark')">🌙 Dark</div>
-          <div class="user-dropdown-item theme-choice" data-theme="light" onclick="setTheme(event, 'light')">☀️ Light</div>
-          <div class="user-dropdown-item theme-choice" data-theme="system" onclick="setTheme(event, 'system')">🖥️ System</div>
+          <div class="user-dropdown-item theme-choice active" data-theme="dark" onclick="setTheme(event,'dark')">🌙 Dark</div>
+          <div class="user-dropdown-item theme-choice" data-theme="light" onclick="setTheme(event,'light')">☀️ Light</div>
+          <div class="user-dropdown-item theme-choice" data-theme="system" onclick="setTheme(event,'system')">🖥️ System</div>
         </div>
         <div class="user-dropdown-divider"></div>
-        <div class="user-dropdown-item danger" onclick="logOut(event)">
-          <span>🚪</span> Log out
-        </div>
+        <div class="user-dropdown-item danger" onclick="logOut(event)"><span>🚪</span> Log out</div>
       </div>
     </div>
   </div>
 </div>
 
+<!-- LAYOUT -->
 <div class="layout">
-
   <aside class="sidebar">
-    <div class="sidebar-item active" data-filter="all" onclick="setFilter('all')">
-      <span class="sidebar-icon">🏠</span> Home
-    </div>
-    <div class="sidebar-item" data-filter="media" onclick="setFilter('media')">
-      <span class="sidebar-icon">🖼️</span> Media
-    </div>
-    <div class="sidebar-item" data-filter="docs" onclick="setFilter('docs')">
-      <span class="sidebar-icon">📄</span> Documents
-    </div>
-    <div class="sidebar-item" data-filter="html" onclick="setFilter('html')">
-      <span class="sidebar-icon">🌐</span> Web Apps
-    </div>
+    <div class="sidebar-item active" data-filter="all" onclick="setFilter('all')"><span class="sidebar-icon">🏠</span> Home</div>
+    <div class="sidebar-item" data-filter="media" onclick="setFilter('media')"><span class="sidebar-icon">🖼️</span> Media</div>
+    <div class="sidebar-item" data-filter="docs" onclick="setFilter('docs')"><span class="sidebar-icon">📄</span> Documents</div>
+    <div class="sidebar-item" data-filter="html" onclick="setFilter('html')"><span class="sidebar-icon">🌐</span> Web Apps</div>
     <div class="sidebar-divider"></div>
-    <div class="sidebar-item" data-filter="people" onclick="setFilter('people')">
-      <span class="sidebar-icon">👥</span> Chat
-    </div>
+    <div class="sidebar-item" data-filter="people" onclick="setFilter('people')"><span class="sidebar-icon">👥</span> Chat</div>
     <div class="sidebar-divider"></div>
     <div class="sidebar-section-title">Manage</div>
-    <div class="sidebar-item" onclick="openUpload()">
-      <span class="sidebar-icon">＋</span> Upload
-    </div>
-    <div class="sidebar-item" onclick="loadPosts(true)">
-      <span class="sidebar-icon">↺</span> Refresh
-    </div>
+    <div class="sidebar-item" onclick="openUpload()"><span class="sidebar-icon">＋</span> Upload</div>
+    <div class="sidebar-item" onclick="loadPosts(true)"><span class="sidebar-icon">↺</span> Refresh</div>
   </aside>
 
   <main class="main">
-    <div class="chips" id="chips">
-      <div class="chip active" data-filter="all" onclick="setFilter('all')">All</div>
-      <div class="chip" data-filter="media" onclick="setFilter('media')">Images</div>
-      <div class="chip" data-filter="docs" onclick="setFilter('docs')">PDF & Text</div>
-      <div class="chip" data-filter="html" onclick="setFilter('html')">Web Apps</div>
-      <div class="chip" data-filter="people" onclick="setFilter('people')">Chat</div>
-    </div>
-
     <div class="grid" id="grid">
       <div class="spinner-wrap"><div class="spinner"></div></div>
     </div>
 
     <div id="chatContainer" class="chat-container">
-      <!-- LIST VIEW: full list of people, like a native messages app -->
       <div class="chat-list-view" id="chatListView">
-        <div class="chat-list-header">
-          <div class="chat-list-title">Chat</div>
-        </div>
+        <div class="chat-list-header"><div class="chat-list-title">Messages</div></div>
         <div id="peopleList" class="chat-list">
-          <div style="color:var(--text3); font-size:13px; padding:20px; text-align:center;">Loading…</div>
+          <div style="color:var(--text3);font-size:13px;padding:20px;text-align:center;">Loading…</div>
         </div>
       </div>
-
-      <!-- THREAD VIEW: an open 1:1 conversation -->
       <div class="chat-thread-view" id="chatThreadView">
         <div class="chat-thread-header">
-          <button class="chat-back-btn" onclick="closeThread()" aria-label="Back">
+          <button class="chat-back-btn" onclick="closeThread()">
             <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
           </button>
           <div class="chat-thread-avatar" id="chatThreadAvatar">?</div>
           <div class="chat-thread-name" id="chatThreadName">–</div>
         </div>
         <div class="chat-messages" id="chatMessages">
-          <div style="text-align:center; padding: 40px; color: var(--text3);">Loading messages...</div>
+          <div style="text-align:center;padding:40px;color:var(--text3);">Loading messages…</div>
         </div>
         <div class="chat-input-area">
           <input type="text" id="chatInput" placeholder="Say something…" onkeypress="if(event.key==='Enter') sendChatMessage()">
@@ -978,21 +618,23 @@ body {
   </main>
 </div>
 
-<div class="fab" onclick="openUpload()">
+<!-- FAB (mobile, hidden on chat) -->
+<div class="fab" id="fab" onclick="openUpload()">
   <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
 </div>
 
+<!-- BOTTOM NAV (mobile only) -->
 <nav class="bottom-nav">
   <div class="bottom-nav-item active" data-filter="all" onclick="setFilter('all')">
     <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-    <span>All</span>
+    <span>Home</span>
   </div>
   <div class="bottom-nav-item" data-filter="media" onclick="setFilter('media')">
     <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
     <span>Media</span>
   </div>
   <div class="bottom-nav-item" data-filter="docs" onclick="setFilter('docs')">
-    <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+    <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
     <span>Docs</span>
   </div>
   <div class="bottom-nav-item" data-filter="html" onclick="setFilter('html')">
@@ -1005,7 +647,8 @@ body {
   </div>
 </nav>
 
-<div class="overlay" id="viewerOverlay" onclick="overlayClickClose(event, 'viewerOverlay')">
+<!-- VIEWER -->
+<div class="overlay" id="viewerOverlay" onclick="overlayClickClose(event,'viewerOverlay')">
   <div class="viewer" id="viewer">
     <div class="viewer-topbar">
       <div class="viewer-title" id="viewerTitle">–</div>
@@ -1023,7 +666,8 @@ body {
   </div>
 </div>
 
-<div class="upload-overlay" id="uploadOverlay" onclick="overlayClickClose(event, 'uploadOverlay')">
+<!-- UPLOAD MODAL -->
+<div class="upload-overlay" id="uploadOverlay" onclick="overlayClickClose(event,'uploadOverlay')">
   <div class="upload-modal">
     <div class="upload-header">
       <h2>Create Post</h2>
@@ -1059,54 +703,29 @@ body {
   </div>
 </div>
 
-<div class="overlay" id="googleSignInOverlay" onclick="overlayClickClose(event, 'googleSignInOverlay')">
-  <div class="upload-modal" style="max-width: 400px;">
-    <div class="upload-body" style="padding: 36px 28px; text-align: center; gap: 0;">
-      <div style="font-size: 40px; margin-bottom: 16px;">👋</div>
-      <h3 style="margin-bottom: 10px; color: var(--text); font-size:20px; font-weight:700;">Sign in to PostHub</h3>
-      <p style="font-size: 13px; color: var(--text2); margin-bottom: 28px; line-height:1.5;">Use your Google account so everyone knows who you are — no duplicate names!</p>
-      <button id="googleSignInBtn" onclick="triggerGoogleSignIn()" style="
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 12px;
-        width: 100%;
-        padding: 13px 20px;
-        background: #fff;
-        color: #3c4043;
-        border: 1px solid #dadce0;
-        border-radius: 8px;
-        font-size: 15px;
-        font-weight: 600;
-        font-family: inherit;
-        cursor: pointer;
-        margin-bottom: 12px;
-        transition: background 0.15s, box-shadow 0.15s;
-      " onmouseover="this.style.background='#f8f9fa'; this.style.boxShadow='0 1px 3px rgba(0,0,0,0.2)'" onmouseout="this.style.background='#fff'; this.style.boxShadow='none'">
-        <svg width="20" height="20" viewBox="0 0 48 48">
-          <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-          <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-          <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
-          <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-          <path fill="none" d="M0 0h48v48H0z"/>
-        </svg>
+<!-- GOOGLE SIGN-IN -->
+<div class="overlay" id="googleSignInOverlay" onclick="overlayClickClose(event,'googleSignInOverlay')">
+  <div class="upload-modal" style="max-width:400px;">
+    <div class="upload-body" style="padding:36px 28px;text-align:center;gap:0;">
+      <div style="font-size:40px;margin-bottom:16px;">👋</div>
+      <h3 style="margin-bottom:10px;color:var(--text);font-size:20px;font-weight:700;">Sign in to FostHub</h3>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:28px;line-height:1.5;">Use your Google account so everyone knows who you are — no duplicate names!</p>
+      <button id="googleSignInBtn" onclick="triggerGoogleSignIn()" style="display:flex;align-items:center;justify-content:center;gap:12px;width:100%;padding:13px 20px;background:#fff;color:#3c4043;border:1px solid #dadce0;border-radius:8px;font-size:15px;font-weight:600;font-family:inherit;cursor:pointer;margin-bottom:12px;transition:background 0.15s,box-shadow 0.15s;" onmouseover="this.style.background='#f8f9fa';this.style.boxShadow='0 1px 3px rgba(0,0,0,0.2)'" onmouseout="this.style.background='#fff';this.style.boxShadow='none'">
+        <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg>
         Continue with Google
       </button>
-      <button class="btn btn-ghost" onclick="closeGoogleSignIn()" style="width:100%; margin-top: 4px;">Maybe later</button>
+      <button class="btn btn-ghost" onclick="closeGoogleSignIn()" style="width:100%;margin-top:4px;">Maybe later</button>
     </div>
   </div>
 </div>
 
 <div class="post-menu" id="postMenu"></div>
-
 <div class="toast-wrap" id="toastWrap"></div>
 
 <script>
-// ── CONFIG ────────────────────────────
 const SB_URL = 'https://nzolsmouyulzqeaocejm.supabase.co';
 const SB_KEY = 'sb_publishable_EGX3jDjRh5LiXjdTw2AXxA_e1YIaP4Q';
 const GOOGLE_CLIENT_ID = '680651504799-pc0krkiavrudqc5mjlbi0g44g6ntirkp.apps.googleusercontent.com';
-
 const BUCKET = 'homework-files';
 const TABLE = 'homework';
 const THEME_KEY = 'posthub_theme';
@@ -1115,7 +734,6 @@ let allPosts = [];
 let activeFilter = 'all';
 let searchQuery = '';
 let selectedFile = null;
-
 let supabase = null;
 let supabaseReadyPromise = null;
 let chatUserId = null;
@@ -1127,196 +745,105 @@ let chatMessages = [];
 let chatUsers = [];
 let presenceHeartbeat = null;
 let usersChannelSubscribed = false;
-let messagesChannelSubscribed = false;
-
 let currentThread = null;
 let dmSupported = true;
 let dmWarned = false;
-
-// Google Auth State
 let googleUser = null;
+let chatPollInterval = null;
+let lastMessageId = null;
+const readThreads = new Set();
 const SESSION_KEY = 'posthub_session';
 
-// Sign-in only ever set googleUser in memory, so a page reload always
-// landed back on "Sign in" even though the person never logged out.
-// These three functions are the single place session data is written to
-// and read from localStorage, so every sign-in path (One Tap, OAuth
-// popup) and logout stay in sync with what's persisted.
-function saveSession(user) {
-  try { localStorage.setItem(SESSION_KEY, JSON.stringify(user)); } catch (e) {}
-}
-
-function clearSession() {
-  try { localStorage.removeItem(SESSION_KEY); } catch (e) {}
-}
-
+function saveSession(u) { try { localStorage.setItem(SESSION_KEY, JSON.stringify(u)); } catch(e){} }
+function clearSession() { try { localStorage.removeItem(SESSION_KEY); } catch(e){} }
 function restoreSession() {
   let saved = null;
-  try { saved = JSON.parse(localStorage.getItem(SESSION_KEY) || 'null'); } catch (e) {}
+  try { saved = JSON.parse(localStorage.getItem(SESSION_KEY)||'null'); } catch(e){}
   if (saved && saved.id && saved.name) {
-    // Skip the "Welcome/toast" side effects of a fresh sign-in — this is
-    // just restoring a session that was already active.
     googleUser = { email: saved.email, name: saved.name, picture: saved.picture, id: saved.id };
-    chatUserId = 'usr_' + googleUser.id.substring(0, 16);
-    chatUserName = googleUser.name;
+    chatUserId   = 'usr_' + googleUser.id.substring(0,16);
+    chatUserName  = googleUser.name;
     chatUserEmail = googleUser.email;
     chatUserPhoto = googleUser.picture;
     updateUserUI();
   }
 }
 
-// ── INIT ──────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   applyStoredTheme();
   restoreSession();
-
   loadPosts();
   setInterval(loadPosts, 15000);
-
   fetchActiveUsers();
   setInterval(fetchActiveUsers, 20000);
-
-  loadSupabaseSdk().then(() => {
-    subscribeToActiveUsers();
-  });
-
-  // Close the user dropdown when tapping/clicking anywhere outside it
+  loadSupabaseSdk().then(() => subscribeToActiveUsers());
   document.addEventListener('click', (e) => {
-    const menu = document.getElementById('userMenu');
-    if (menu && !menu.contains(e.target)) {
-      closeUserDropdown();
-    }
-    const postMenu = document.getElementById('postMenu');
-    if (postMenu && !postMenu.contains(e.target)) {
-      closePostMenu();
-    }
+    if (!document.getElementById('userMenu').contains(e.target)) closeUserDropdown();
+    if (!document.getElementById('postMenu').contains(e.target)) closePostMenu();
   });
 });
 
 function loadSupabaseSdk() {
   if (supabaseReadyPromise) return supabaseReadyPromise;
   supabaseReadyPromise = new Promise((resolve, reject) => {
-    const script = document.createElement('script');
-    script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
-    script.onload = () => {
-      supabase = window.supabase.createClient(SB_URL, SB_KEY);
-      resolve(supabase);
-    };
-    script.onerror = reject;
-    document.head.appendChild(script);
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+    s.onload = () => { supabase = window.supabase.createClient(SB_URL, SB_KEY); resolve(supabase); };
+    s.onerror = reject;
+    document.head.appendChild(s);
   });
   return supabaseReadyPromise;
 }
 
-// ── THEME ─────────────────────────────
+// ── THEME ──────────────────────────
 function applyStoredTheme() {
-  let saved = 'dark';
-  try { saved = localStorage.getItem(THEME_KEY) || 'dark'; } catch (e) {}
-  applyTheme(saved, /*persist*/ false);
+  let s = 'dark';
+  try { s = localStorage.getItem(THEME_KEY)||'dark'; } catch(e){}
+  applyTheme(s, false);
 }
-
-function applyTheme(theme, persist = true) {
-  // 'system' follows the OS color-scheme; 'light' and 'dark' are explicit.
-  let resolved = theme;
-  if (theme === 'system') {
-    resolved = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
-  }
-  document.documentElement.setAttribute('data-theme', resolved);
-
-  document.querySelectorAll('.theme-choice').forEach(el => {
-    el.classList.toggle('active', el.dataset.theme === theme);
-  });
-
-  if (persist) {
-    try { localStorage.setItem(THEME_KEY, theme); } catch (e) {}
-  }
+function applyTheme(theme, persist=true) {
+  let r = theme;
+  if (theme==='system') r = (window.matchMedia&&window.matchMedia('(prefers-color-scheme: light)').matches)?'light':'dark';
+  document.documentElement.setAttribute('data-theme', r);
+  document.querySelectorAll('.theme-choice').forEach(el => el.classList.toggle('active', el.dataset.theme===theme));
+  if (persist) try { localStorage.setItem(THEME_KEY, theme); } catch(e){}
 }
+function setTheme(e, theme) { e.stopPropagation(); applyTheme(theme, true); toast(`Theme: ${theme}`, 'ok'); closeUserDropdown(); }
 
-function setTheme(e, theme) {
-  e.stopPropagation();
-  applyTheme(theme, true);
-  toast(`Theme set to ${theme}`, 'ok');
-  closeUserDropdown();
-}
-
-// ── USER MENU ─────────────────────────
+// ── USER MENU ──────────────────────
 function toggleUserMenu(e) {
   e.stopPropagation();
-  if (!googleUser) {
-    openGoogleSignIn();
-    return;
-  }
-  const dropdown = document.getElementById('userDropdown');
-  dropdown.classList.toggle('open');
-  if (!dropdown.classList.contains('open')) {
-    document.getElementById('themeOptions').classList.remove('open');
-  }
+  if (!googleUser) { openGoogleSignIn(); return; }
+  document.getElementById('userDropdown').classList.toggle('open');
 }
-
 function closeUserDropdown() {
   document.getElementById('userDropdown').classList.remove('open');
   document.getElementById('themeOptions').classList.remove('open');
 }
-
-function toggleThemeOptions(e) {
-  e.stopPropagation();
-  document.getElementById('themeOptions').classList.toggle('open');
-}
+function toggleThemeOptions(e) { e.stopPropagation(); document.getElementById('themeOptions').classList.toggle('open'); }
 
 function logOut(e) {
   e.stopPropagation();
   closeUserDropdown();
-
-  // Stop presence/chat activity tied to this session
   if (presenceHeartbeat) clearInterval(presenceHeartbeat);
-  if (chatPollInterval) clearInterval(chatPollInterval);
-
-  if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
-    google.accounts.id.disableAutoSelect();
-  }
-
+  if (chatPollInterval)  clearInterval(chatPollInterval);
+  if (typeof google !== 'undefined' && google.accounts) google.accounts.id.disableAutoSelect();
   clearSession();
-
-  googleUser = null;
-  chatUserId = null;
-  chatUserName = null;
-  chatUserEmail = null;
-  chatUserPhoto = null;
-  chatInitialized = false;
-  chatMessages = [];
-  currentThread = null;
-  lastMessageId = null;
-
-  // Reset the avatar's whole contents in one go — don't assume a child
-  // #userInitial span still exists, since sign-in replaces it with an
-  // <img> when the user has a profile photo. Reaching for that stale id
-  // here would throw and abort the rest of this function.
+  googleUser = chatUserId = chatUserName = chatUserEmail = chatUserPhoto = null;
+  chatInitialized = false; chatMessages = []; currentThread = null; lastMessageId = null;
   document.getElementById('userAvatarTop').innerHTML = '<span id="userInitial">?</span>';
   document.getElementById('userNameTop').textContent = 'Sign in';
-
-  // If they were on the chat tab, send them back to a safe default view
   if (activeFilter === 'people') setFilter('all');
-
   toast('Signed out', 'ok');
 }
 
-// ── GOOGLE SIGN-IN ────────────────────
-// Single source of truth for "the user is now signed in" — both the
-// One Tap / ID-token flow and the OAuth2 popup fallback funnel into this,
-// so neither path can silently leave the UI stuck on "Sign in".
+// ── GOOGLE SIGN-IN ──────────────────
 function setSignedInUser(profile) {
-  googleUser = {
-    email: profile.email,
-    name: profile.name,
-    picture: profile.picture,
-    id: profile.id
-  };
-
-  chatUserId = 'usr_' + googleUser.id.substring(0, 16);
-  chatUserName = googleUser.name;
+  googleUser = { email: profile.email, name: profile.name, picture: profile.picture, id: profile.id };
+  chatUserId   = 'usr_' + googleUser.id.substring(0,16);
+  chatUserName  = googleUser.name;
   chatUserEmail = googleUser.email;
   chatUserPhoto = googleUser.picture;
-
   saveSession(googleUser);
   updateUserUI();
   closeGoogleSignIn();
@@ -1324,13 +851,8 @@ function setSignedInUser(profile) {
 }
 
 function handleGoogleSignIn(response) {
-  const decoded = jwt_decode(response.credential);
-  setSignedInUser({
-    email: decoded.email,
-    name: decoded.name,
-    picture: decoded.picture,
-    id: decoded.sub
-  });
+  const d = jwt_decode(response.credential);
+  setSignedInUser({ email: d.email, name: d.name, picture: d.picture, id: d.sub });
 }
 
 function resetSignInButton() {
@@ -1341,138 +863,67 @@ function resetSignInButton() {
 function triggerGoogleSignIn() {
   const btn = document.getElementById('googleSignInBtn');
   if (btn) { btn.textContent = 'Opening Google…'; btn.disabled = true; }
-
   if (typeof google === 'undefined' || !google.accounts) {
-    // GSI not loaded yet — wait and retry
-    setTimeout(() => {
-      resetSignInButton();
-      toast('Google sign-in not ready yet, try again', 'err');
-    }, 1000);
+    setTimeout(() => { resetSignInButton(); toast('Google sign-in not ready, try again', 'err'); }, 1000);
     return;
   }
-
-  // prompt() shows the One Tap UI when it's allowed to display. Many
-  // browsers (in-app browsers, repeat visits, etc.) suppress it silently —
-  // isNotDisplayed()/isSkippedMoment() is how we detect that and need to
-  // fall back to a real popup flow instead of leaving sign-in half-done.
-  google.accounts.id.prompt(notification => {
-    if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-      startOAuthPopupSignIn();
-    } else {
-      // One Tap displayed — handleGoogleSignIn will fire via the
-      // configured callback if the person completes it. Restore the
-      // button in case they dismiss it instead.
-      resetSignInButton();
-    }
+  google.accounts.id.prompt(n => {
+    if (n.isNotDisplayed() || n.isSkippedMoment()) startOAuthPopupSignIn();
+    else resetSignInButton();
   });
 }
 
-// Fallback when One Tap can't show: a real OAuth2 popup that gets an
-// access token, then fetches the profile and completes sign-in the same
-// way the One Tap path does. The previous version requested a token and
-// threw it away (empty callback), which is why "Continue with Google"
-// could look like it worked but never actually signed anyone in.
 function startOAuthPopupSignIn() {
-  if (!google.accounts.oauth2) {
-    resetSignInButton();
-    toast('Google sign-in unavailable, try again', 'err');
-    return;
-  }
-
+  if (!google.accounts.oauth2) { resetSignInButton(); toast('Google sign-in unavailable', 'err'); return; }
   const client = google.accounts.oauth2.initTokenClient({
     client_id: GOOGLE_CLIENT_ID,
     scope: 'email profile openid',
-    callback: async (tokenResponse) => {
+    callback: async (tr) => {
       try {
-        if (!tokenResponse || !tokenResponse.access_token) {
-          throw new Error('No access token returned');
-        }
-        const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-          headers: { Authorization: `Bearer ${tokenResponse.access_token}` }
-        });
-        if (!res.ok) throw new Error('Failed to fetch Google profile');
-        const profile = await res.json();
-        setSignedInUser({
-          email: profile.email,
-          name: profile.name,
-          picture: profile.picture,
-          id: profile.sub
-        });
-      } catch (e) {
-        console.error('OAuth sign-in failed', e);
-        toast('Sign-in failed, please try again', 'err');
-      } finally {
-        resetSignInButton();
-      }
+        if (!tr || !tr.access_token) throw new Error('No token');
+        const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', { headers: { Authorization: `Bearer ${tr.access_token}` }});
+        if (!res.ok) throw new Error('Profile fetch failed');
+        const p = await res.json();
+        setSignedInUser({ email: p.email, name: p.name, picture: p.picture, id: p.sub });
+      } catch(e) { toast('Sign-in failed, try again', 'err'); }
+      finally { resetSignInButton(); }
     },
-    error_callback: (err) => {
-      console.error('OAuth popup error', err);
-      resetSignInButton();
-      if (err.type !== 'popup_closed') {
-        toast('Sign-in failed, please try again', 'err');
-      }
-    }
+    error_callback: (err) => { resetSignInButton(); if (err.type !== 'popup_closed') toast('Sign-in failed', 'err'); }
   });
   client.requestAccessToken();
 }
 
 function googleBtnInner() {
-  return `<svg width="20" height="20" viewBox="0 0 48 48" style="flex-shrink:0">
-    <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-    <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-    <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
-    <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-  </svg> Continue with Google`;
+  return `<svg width="20" height="20" viewBox="0 0 48 48" style="flex-shrink:0"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg> Continue with Google`;
 }
 
-function openGoogleSignIn() {
-  document.getElementById('googleSignInOverlay').classList.add('open');
-}
-
-function closeGoogleSignIn() {
-  document.getElementById('googleSignInOverlay').classList.remove('open');
-}
+function openGoogleSignIn()  { document.getElementById('googleSignInOverlay').classList.add('open'); }
+function closeGoogleSignIn() { document.getElementById('googleSignInOverlay').classList.remove('open'); }
 
 function updateUserUI() {
-  const initial = googleUser.name.charAt(0).toUpperCase();
   document.getElementById('userNameTop').textContent = googleUser.name.split(' ')[0];
-
   const avatar = document.getElementById('userAvatarTop');
-  if (googleUser.picture) {
-    avatar.innerHTML = `<img src="${googleUser.picture}" alt="${esc(googleUser.name)}">`;
-  } else {
-    avatar.innerHTML = `<span id="userInitial">${initial}</span>`;
-  }
+  avatar.innerHTML = googleUser.picture
+    ? `<img src="${googleUser.picture}" alt="${esc(googleUser.name)}">`
+    : `<span id="userInitial">${googleUser.name.charAt(0).toUpperCase()}</span>`;
 }
 
-// Helper to decode JWT (basic implementation)
 function jwt_decode(token) {
-  const base64Url = token.split('.')[1];
-  const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-  const jsonPayload = decodeURIComponent(atob(base64).split('').map(c => {
-    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-  }).join(''));
-  return JSON.parse(jsonPayload);
+  const base64 = token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/');
+  return JSON.parse(decodeURIComponent(atob(base64).split('').map(c => '%' + ('00'+c.charCodeAt(0).toString(16)).slice(-2)).join('')));
 }
 
-// ── POSTS ────────────────────────────
-async function loadPosts(showSpinner = false) {
-  if (showSpinner) {
-    document.getElementById('grid').innerHTML = '<div class="spinner-wrap"><div class="spinner"></div></div>';
-  }
+// ── POSTS ───────────────────────────
+async function loadPosts(showSpinner=false) {
+  if (showSpinner) document.getElementById('grid').innerHTML = '<div class="spinner-wrap"><div class="spinner"></div></div>';
   try {
-    const r = await fetch(`${SB_URL}/rest/v1/${TABLE}?order=created_at.desc`, {
-      headers: { apikey: SB_KEY }
-    });
-    if (!r.ok) throw new Error('Failed to load posts');
+    const r = await fetch(`${SB_URL}/rest/v1/${TABLE}?order=created_at.desc`, { headers: { apikey: SB_KEY } });
+    if (!r.ok) throw new Error();
     allPosts = await r.json();
     if (activeFilter !== 'people') renderGrid();
-  } catch (err) {
-    console.error(err);
-    if (allPosts.length === 0 && activeFilter !== 'people') {
-      document.getElementById('grid').innerHTML = `
-        <div class="state-msg"><div class="ico">📭</div><p>No posts yet — be the first to publish!</p></div>`;
-    }
+  } catch {
+    if (allPosts.length === 0 && activeFilter !== 'people')
+      document.getElementById('grid').innerHTML = `<div class="state-msg"><div class="ico">📭</div><p>No posts yet — be the first to publish!</p></div>`;
   }
 }
 
@@ -1480,153 +931,74 @@ function getFileType(url) {
   if (!url) return 'text';
   const ext = url.split('?')[0].split('.').pop().toLowerCase();
   if (['png','jpg','jpeg','gif','webp','svg'].includes(ext)) return 'media';
-  if (['pdf'].includes(ext)) return 'docs';
-  if (['txt'].includes(ext)) return 'docs';
-  if (['html'].includes(ext)) return 'html';
+  if (['pdf','txt'].includes(ext)) return 'docs';
+  if (ext === 'html') return 'html';
   return 'other';
 }
 
 function renderGrid() {
   let posts = allPosts;
-
   if (activeFilter !== 'all') {
     posts = posts.filter(p => {
-      const type = getFileType(p.file_url);
-      if (activeFilter === 'media' && type === 'media') return true;
-      if (activeFilter === 'docs' && type === 'docs') return true;
-      if (activeFilter === 'html' && type === 'html') return true;
-      return false;
+      const t = getFileType(p.file_url);
+      return (activeFilter === 'media' && t === 'media') ||
+             (activeFilter === 'docs'  && t === 'docs')  ||
+             (activeFilter === 'html'  && t === 'html');
     });
   }
-
   if (searchQuery) {
     const q = searchQuery.toLowerCase();
-    posts = posts.filter(p =>
-      (p.title||'').toLowerCase().includes(q) ||
-      (p.subject||'').toLowerCase().includes(q)
-    );
+    posts = posts.filter(p => (p.title||'').toLowerCase().includes(q) || (p.subject||'').toLowerCase().includes(q));
   }
-
   const grid = document.getElementById('grid');
-  if (posts.length === 0) {
-    grid.innerHTML = `<div class="state-msg"><div class="ico">🔍</div><p>Nothing to show here.</p></div>`;
-    return;
-  }
-
+  if (posts.length === 0) { grid.innerHTML = `<div class="state-msg"><div class="ico">🔍</div><p>Nothing to show here.</p></div>`; return; }
   grid.innerHTML = posts.map(p => cardHTML(p)).join('');
   hydrateHtmlThumbs();
 }
 
 function cardHTML(p) {
-  const author = (p.title || 'Anonymous').split(' ')[0];
+  const author = p.author_name || p.title || 'Anonymous';
   const initial = author[0].toUpperCase();
   const hasFile = !!p.file_url;
   const type = getFileType(p.file_url);
   const timeStr = timeAgo(p.created_at);
   const thumbId = 'thumb_' + (p.id ?? Math.random().toString(36).slice(2));
-
-  let thumb = `<div class="card-thumb-icon">📝</div>`;
-  let badge = 'TEXT';
-
+  let thumb = `<div class="card-thumb-icon">📝</div>`, badge = 'TEXT';
   if (hasFile) {
-    if (type === 'media') {
-      thumb = `<img src="${p.file_url}" class="card-thumb-preview" style="object-fit:cover;">`;
-      badge = 'IMAGE';
-    } else if (type === 'docs') {
-      thumb = `<div class="card-thumb-icon">📄</div>`;
-      badge = 'DOC';
-    } else if (type === 'html') {
-      thumb = `<div class="card-thumb-preview card-thumb-pending" id="${thumbId}" data-html-url="${esc(p.file_url)}"><div class="spinner" style="width:20px;height:20px;border-width:2px;"></div></div>`;
-      badge = 'APP';
-    } else {
-      thumb = `<div class="card-thumb-icon">📁</div>`;
-      badge = 'FILE';
-    }
+    if (type === 'media')  { thumb = `<img src="${p.file_url}" class="card-thumb-preview" style="object-fit:cover;">`; badge = 'IMAGE'; }
+    else if (type === 'docs') { thumb = `<div class="card-thumb-icon">📄</div>`; badge = 'DOC'; }
+    else if (type === 'html') { thumb = `<div class="card-thumb-preview card-thumb-pending" id="${thumbId}" data-html-url="${esc(p.file_url)}"><div class="spinner" style="width:20px;height:20px;border-width:2px;"></div></div>`; badge = 'APP'; }
+    else { thumb = `<div class="card-thumb-icon">📁</div>`; badge = 'FILE'; }
   }
-
-  const avatarImg = p.author_photo
-    ? `<img src="${esc(p.author_photo)}" alt="${esc(p.author_name || initial)}">`
-    : initial;
-
-  const authorName = esc(p.author_name || p.title || 'Anonymous');
-
+  const avatarInner = p.author_photo ? `<img src="${esc(p.author_photo)}" alt="${esc(author)}">` : initial;
   return `
     <div class="card" onclick='openViewer(${JSON.stringify(p)})'>
-      <div class="card-thumb">
-        ${thumb}
-        <div class="card-type-badge">${badge}</div>
-      </div>
+      <div class="card-thumb">${thumb}<div class="card-type-badge">${badge}</div></div>
       <div class="card-info">
-        <div class="card-avatar">${avatarImg}</div>
+        <div class="card-avatar">${avatarInner}</div>
         <div class="card-meta">
-          <div class="card-title">${esc(p.subject || p.title || 'Untitled')}</div>
-          <div class="card-subline">${authorName}<span class="dot">·</span>${timeStr}</div>
+          <div class="card-title">${esc(p.subject||p.title||'Untitled')}</div>
+          <div class="card-subline">${esc(author)}<span class="dot">·</span>${timeStr}</div>
         </div>
-        <div class="card-kebab" onclick='event.stopPropagation(); openPostMenu(event, ${JSON.stringify({ id: p.id, author_email: p.author_email })})'>
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><circle cx="12" cy="5" r="2"></circle><circle cx="12" cy="12" r="2"></circle><circle cx="12" cy="19" r="2"></circle></svg>
+        <div class="card-kebab" onclick='event.stopPropagation();openPostMenu(event,${JSON.stringify({id:p.id,author_email:p.author_email})})'>
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>
         </div>
       </div>
     </div>`;
 }
 
-// ── POST OPTIONS MENU (kebab) ─────────
-function openPostMenu(e, post) {
-  const menu = document.getElementById('postMenu');
-  const isOwner = googleUser && post.author_email && googleUser.email === post.author_email;
-
-  menu.innerHTML = `
-    ${isOwner ? `<div class="post-menu-item danger" onclick="deletePost('${post.id}')"><span>🗑️</span> Delete post</div>` : ''}
-    <div class="post-menu-item" onclick="closePostMenu(); toast('Thanks, we got your report', 'ok')"><span>🚩</span> Report</div>
-  `;
-
-  // Position near the tapped kebab, but keep it on-screen.
-  const rect = e.currentTarget.getBoundingClientRect();
-  const menuWidth = 180;
-  let left = rect.right - menuWidth;
-  if (left < 8) left = 8;
-  let top = rect.bottom + 4;
-  if (top + 100 > window.innerHeight) top = rect.top - 90;
-
-  menu.style.left = left + 'px';
-  menu.style.top = top + 'px';
-  menu.classList.add('open');
-}
-
-function closePostMenu() {
-  document.getElementById('postMenu').classList.remove('open');
-}
-
-async function deletePost(id) {
-  closePostMenu();
-  try {
-    const r = await fetch(`${SB_URL}/rest/v1/${TABLE}?id=eq.${id}`, {
-      method: 'DELETE',
-      headers: { apikey: SB_KEY, Prefer: 'return=minimal' }
-    });
-    if (!r.ok) throw new Error('Delete failed');
-    allPosts = allPosts.filter(p => String(p.id) !== String(id));
-    renderGrid();
-    toast('Post deleted', 'ok');
-  } catch (e) {
-    console.error(e);
-    toast('Failed to delete post', 'err');
-  }
-}
-
 const htmlSrcCache = new Map();
-
 async function getHtmlSource(url) {
   if (htmlSrcCache.has(url)) return htmlSrcCache.get(url);
   const res = await fetch(url);
-  if (!res.ok) throw new Error('Failed to load app source');
+  if (!res.ok) throw new Error();
   const text = await res.text();
   htmlSrcCache.set(url, text);
   return text;
 }
 
 async function hydrateHtmlThumbs() {
-  const placeholders = document.querySelectorAll('.card-thumb-pending');
-  for (const el of placeholders) {
+  for (const el of document.querySelectorAll('.card-thumb-pending')) {
     const url = el.dataset.htmlUrl;
     try {
       const html = await getHtmlSource(url);
@@ -1636,33 +1008,53 @@ async function hydrateHtmlThumbs() {
       iframe.setAttribute('scrolling', 'no');
       iframe.srcdoc = html;
       el.replaceWith(iframe);
-    } catch (e) {
-      console.error('Failed to load app preview', e);
+    } catch {
       el.innerHTML = '<div class="card-thumb-icon">🌐</div>';
       el.classList.remove('card-thumb-pending');
     }
   }
 }
 
-// ── VIEWER ────────────────────────────
+// ── KEBAB MENU ──────────────────────
+function openPostMenu(e, post) {
+  const menu = document.getElementById('postMenu');
+  const isOwner = googleUser && post.author_email && googleUser.email === post.author_email;
+  menu.innerHTML = `
+    ${isOwner ? `<div class="post-menu-item danger" onclick="deletePost('${post.id}')"><span>🗑️</span> Delete post</div>` : ''}
+    <div class="post-menu-item" onclick="closePostMenu();toast('Thanks for your report','ok')"><span>🚩</span> Report</div>`;
+  const rect = e.currentTarget.getBoundingClientRect();
+  const mw = 180;
+  let left = rect.right - mw;
+  if (left < 8) left = 8;
+  let top = rect.bottom + 4;
+  if (top + 100 > window.innerHeight) top = rect.top - 90;
+  menu.style.left = left + 'px'; menu.style.top = top + 'px';
+  menu.classList.add('open');
+}
+function closePostMenu() { document.getElementById('postMenu').classList.remove('open'); }
+async function deletePost(id) {
+  closePostMenu();
+  try {
+    const r = await fetch(`${SB_URL}/rest/v1/${TABLE}?id=eq.${id}`, { method:'DELETE', headers:{ apikey:SB_KEY, Prefer:'return=minimal' }});
+    if (!r.ok) throw new Error();
+    allPosts = allPosts.filter(p => String(p.id) !== String(id));
+    renderGrid(); toast('Post deleted', 'ok');
+  } catch { toast('Failed to delete', 'err'); }
+}
+
+// ── VIEWER ──────────────────────────
 function openViewer(p) {
   const author = p.author_name || p.title || 'Anonymous';
-  document.getElementById('viewerTitle').textContent = p.subject || p.title || 'Post';
+  document.getElementById('viewerTitle').textContent  = p.subject || p.title || 'Post';
   document.getElementById('viewerAuthor').textContent = author;
-  document.getElementById('viewerDate').textContent = new Date(p.created_at).toLocaleString();
-
-  const viewerAvatar = document.getElementById('viewerAvatar');
-  if (p.author_photo) {
-    viewerAvatar.innerHTML = `<img src="${esc(p.author_photo)}" alt="${esc(author)}">`;
-  } else {
-    viewerAvatar.textContent = author[0].toUpperCase();
-  }
-
+  document.getElementById('viewerDate').textContent   = new Date(p.created_at).toLocaleString();
+  const va = document.getElementById('viewerAvatar');
+  va.innerHTML = p.author_photo ? `<img src="${esc(p.author_photo)}" alt="${esc(author)}">` : author[0].toUpperCase();
   const content = document.getElementById('viewerContent');
   if (p.file_url) {
     const type = getFileType(p.file_url);
     if (type === 'media') {
-      content.innerHTML = `<img src="${p.file_url}" style="width:100%; height:auto; display:block; max-height:70vh; object-fit:contain; background:#000;">`;
+      content.innerHTML = `<img src="${p.file_url}" style="width:100%;height:auto;display:block;max-height:70vh;object-fit:contain;background:#000;">`;
     } else if (type === 'html') {
       content.innerHTML = `<div class="viewer-frame-wrap html-app" id="viewerFrameWrap"><div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;"><div class="spinner"></div></div></div>`;
       const wrap = document.getElementById('viewerFrameWrap');
@@ -1671,147 +1063,81 @@ function openViewer(p) {
         iframe.setAttribute('sandbox', 'allow-scripts allow-forms allow-popups allow-modals allow-popups-to-escape-sandbox');
         iframe.setAttribute('scrolling', 'yes');
         iframe.srcdoc = html;
-        wrap.innerHTML = '';
-        wrap.appendChild(iframe);
-      }).catch(e => {
-        console.error('Failed to load app', e);
-        wrap.innerHTML = `
-          <div style="padding: 60px 20px; text-align: center; width:100%;">
-            <div style="font-size: 48px; margin-bottom: 16px;">⚠️</div>
-            <div style="margin-bottom: 20px; color: var(--text2);">Couldn't load this app inline.</div>
-            <a href="${p.file_url}" target="_blank" class="btn btn-primary" style="display:inline-block; text-decoration:none;">Open in new tab</a>
-          </div>`;
+        wrap.innerHTML = ''; wrap.appendChild(iframe);
+      }).catch(() => {
+        wrap.innerHTML = `<div style="padding:60px 20px;text-align:center;width:100%;"><div style="font-size:48px;margin-bottom:16px;">⚠️</div><div style="margin-bottom:20px;color:var(--text2);">Couldn't load this app inline.</div><a href="${p.file_url}" target="_blank" class="btn btn-primary" style="display:inline-block;text-decoration:none;">Open in new tab</a></div>`;
       });
     } else {
-      content.innerHTML = `
-        <div style="padding: 80px 20px; text-align: center;">
-          <div style="font-size: 64px; margin-bottom: 20px;">📄</div>
-          <div style="margin-bottom: 24px; color: var(--text2);">Document Preview</div>
-          <a href="${p.file_url}" target="_blank" class="btn btn-primary" style="display:inline-block; text-decoration:none;">Download / Open File</a>
-        </div>`;
+      content.innerHTML = `<div style="padding:80px 20px;text-align:center;"><div style="font-size:64px;margin-bottom:20px;">📄</div><div style="margin-bottom:24px;color:var(--text2);">Document Preview</div><a href="${p.file_url}" target="_blank" class="btn btn-primary" style="display:inline-block;text-decoration:none;">Download / Open File</a></div>`;
     }
   } else {
-    content.innerHTML = `<div class="viewer-text-only">${esc(p.subject || '')}</div>`;
+    content.innerHTML = `<div class="viewer-text-only">${esc(p.subject||'')}</div>`;
   }
-
   const bodyEl = document.getElementById('viewerBody');
-  if (p.file_url && p.subject) {
-    bodyEl.innerHTML = `<div class="viewer-body-text">${esc(p.subject)}</div>`;
-  } else {
-    bodyEl.innerHTML = '';
-  }
-
+  bodyEl.innerHTML = (p.file_url && p.subject) ? `<div class="viewer-body-text">${esc(p.subject)}</div>` : '';
   document.getElementById('viewerOverlay').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
-
 function closeViewer() {
   document.getElementById('viewerOverlay').classList.remove('open');
   document.getElementById('viewerContent').innerHTML = '';
   document.body.style.overflow = '';
 }
 
-// ── UPLOAD MODAL ──────────────────────
-function openUpload() {
-  if (!googleUser) {
-    openGoogleSignIn();
-    return;
-  }
-  document.getElementById('uploadOverlay').classList.add('open');
-  document.body.style.overflow = 'hidden';
-}
-
-function closeUpload() {
-  document.getElementById('uploadOverlay').classList.remove('open');
-  document.body.style.overflow = '';
-  resetUploadForm();
-}
-
+// ── UPLOAD ──────────────────────────
+function openUpload()  { if (!googleUser) { openGoogleSignIn(); return; } document.getElementById('uploadOverlay').classList.add('open'); document.body.style.overflow='hidden'; }
+function closeUpload() { document.getElementById('uploadOverlay').classList.remove('open'); document.body.style.overflow=''; resetUploadForm(); }
 function resetUploadForm() {
   document.getElementById('inputTitle').value = '';
-  document.getElementById('inputDesc').value = '';
-  document.getElementById('fileInput').value = '';
+  document.getElementById('inputDesc').value  = '';
+  document.getElementById('fileInput').value  = '';
   selectedFile = null;
   const dz = document.getElementById('dropzone');
   dz.className = 'dropzone';
-  dz.querySelector('.dz-icon').textContent = '📁';
+  dz.querySelector('.dz-icon').textContent  = '📁';
   dz.querySelector('.dz-label').textContent = 'Drop file or click to browse';
-  dz.querySelector('.dz-sub').textContent = 'HTML, PDF, TXT, Images (max 5 MB)';
+  dz.querySelector('.dz-sub').textContent   = 'HTML, PDF, TXT, Images (max 5 MB)';
   document.getElementById('dzProgress').style.display = 'none';
 }
-
 function fileChosen(e) { handleFile(e.target.files[0]); }
 function dzDragOver(e) { e.preventDefault(); document.getElementById('dropzone').classList.add('drag'); }
-function dzDragLeave() { document.getElementById('dropzone').classList.remove('drag'); }
-function dzDrop(e) { e.preventDefault(); document.getElementById('dropzone').classList.remove('drag'); handleFile(e.dataTransfer.files[0]); }
-
+function dzDragLeave()  { document.getElementById('dropzone').classList.remove('drag'); }
+function dzDrop(e)     { e.preventDefault(); document.getElementById('dropzone').classList.remove('drag'); handleFile(e.dataTransfer.files[0]); }
 function handleFile(file) {
   if (!file) return;
-  const validExts = ['html', 'pdf', 'txt', 'png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'];
   const ext = file.name.split('.').pop().toLowerCase();
-
-  if (!validExts.includes(ext)) { toast('File type not supported', 'err'); return; }
-  if (file.size > 5 * 1024 * 1024) { toast('File too large (max 5 MB)', 'err'); return; }
-
+  if (!['html','pdf','txt','png','jpg','jpeg','gif','webp','svg'].includes(ext)) { toast('File type not supported', 'err'); return; }
+  if (file.size > 5*1024*1024) { toast('File too large (max 5 MB)', 'err'); return; }
   selectedFile = file;
   const dz = document.getElementById('dropzone');
   dz.classList.add('dz-selected');
-  dz.querySelector('.dz-icon').textContent = '✅';
+  dz.querySelector('.dz-icon').textContent  = '✅';
   dz.querySelector('.dz-label').textContent = file.name;
-  dz.querySelector('.dz-sub').textContent = (file.size / 1024).toFixed(1) + ' KB';
+  dz.querySelector('.dz-sub').textContent   = (file.size/1024).toFixed(1) + ' KB';
 }
 
 async function publishPost() {
-  if (!googleUser) {
-    toast('Please sign in first', 'err');
-    return;
-  }
-
+  if (!googleUser) { toast('Please sign in first', 'err'); return; }
   const title = document.getElementById('inputTitle').value.trim();
-  const desc = document.getElementById('inputDesc').value.trim();
-
+  const desc  = document.getElementById('inputDesc').value.trim();
   if (!title && !desc && !selectedFile) { toast('Add a title, description, or file', 'err'); return; }
-
   const btn = document.getElementById('publishBtn');
-  btn.disabled = true;
-  btn.textContent = 'Publishing…';
-
+  btn.disabled = true; btn.textContent = 'Publishing…';
   try {
     let fileUrl = null;
     if (selectedFile) fileUrl = await uploadFile(selectedFile);
-
-    const displayTitle = title || desc.slice(0, 60) || selectedFile?.name || 'Post';
-    const content = desc || title;
-
+    const displayTitle = title || desc.slice(0,60) || selectedFile?.name || 'Post';
     const r = await fetch(`${SB_URL}/rest/v1/${TABLE}`, {
       method: 'POST',
-      headers: {
-        apikey: SB_KEY,
-        'Content-Type': 'application/json',
-        Prefer: 'return=minimal'
-      },
-      body: JSON.stringify({
-        title: displayTitle,
-        subject: content,
-        file_url: fileUrl,
-        author_name: googleUser.name,
-        author_email: googleUser.email,
-        author_photo: googleUser.picture
-      })
+      headers: { apikey: SB_KEY, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+      body: JSON.stringify({ title: displayTitle, subject: desc||title, file_url: fileUrl, author_name: googleUser.name, author_email: googleUser.email, author_photo: googleUser.picture })
     });
-
-    if (!r.ok) throw new Error('Failed to publish');
-
+    if (!r.ok) throw new Error();
     toast('Post published!', 'ok');
     closeUpload();
     await loadPosts();
-  } catch (e) {
-    console.error(e);
-    toast('Failed to publish', 'err');
-  } finally {
-    btn.disabled = false;
-    btn.textContent = 'Publish';
-  }
+  } catch { toast('Failed to publish', 'err'); }
+  finally { btn.disabled = false; btn.textContent = 'Publish'; }
 }
 
 async function uploadFile(file) {
@@ -1819,107 +1145,74 @@ async function uploadFile(file) {
   const prog = document.getElementById('dzProgress');
   const fill = document.getElementById('dzFill');
   prog.style.display = 'block';
-
   let pct = 0;
-  const tick = setInterval(() => { pct = Math.min(pct + 8, 85); fill.style.width = pct + '%'; }, 120);
-
-  const fd = new FormData();
-  fd.append('file', file);
-
+  const tick = setInterval(() => { pct = Math.min(pct+8,85); fill.style.width = pct+'%'; }, 120);
+  const fd = new FormData(); fd.append('file', file);
   const r = await fetch(`${SB_URL}/storage/v1/object/${BUCKET}/${fileName}`, {
-    method: 'POST',
-    headers: {
-      apikey: SB_KEY,
-      Authorization: `Bearer ${SB_KEY}`
-    },
-    body: fd
+    method: 'POST', headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` }, body: fd
   });
-
-  clearInterval(tick);
-  fill.style.width = '100%';
-
-  if (!r.ok) throw new Error('File upload failed');
-
+  clearInterval(tick); fill.style.width = '100%';
+  if (!r.ok) throw new Error('Upload failed');
   return `${SB_URL}/storage/v1/object/public/${BUCKET}/${fileName}`;
 }
 
-// ── FILTERS & NAVIGATION ──────────────
+// ── NAVIGATION / FILTERS ───────────
 function setFilter(f) {
   activeFilter = f;
+  document.querySelectorAll('[data-filter]').forEach(el => el.classList.toggle('active', el.dataset.filter === f));
 
-  document.querySelectorAll('[data-filter]').forEach(el => {
-    if (el.dataset.filter === f) el.classList.add('active');
-    else el.classList.remove('active');
-  });
+  const onChat = (f === 'people');
 
-  if (f === 'people') {
+  // Toggle upload button and FAB visibility on chat tab
+  document.getElementById('btnCreate').classList.toggle('hidden', onChat);
+  const fab = document.getElementById('fab');
+  if (fab) fab.classList.toggle('hidden', onChat);
+
+  if (onChat) {
     document.getElementById('grid').style.display = 'none';
-    document.getElementById('chips').style.display = 'none';
     document.getElementById('chatContainer').style.display = 'block';
-
-    // Always land on the people list, not a previously open thread.
     closeThread();
     renderChatUsers();
-
-    if (!googleUser) {
-      openGoogleSignIn();
-    } else {
-      initChat();
-    }
+    if (!googleUser) openGoogleSignIn();
+    else initChat();
   } else {
-    document.getElementById('grid').style.display = 'grid';
-    document.getElementById('chips').style.display = 'flex';
+    document.getElementById('grid').style.display = 'flex';
     document.getElementById('chatContainer').style.display = 'none';
     renderGrid();
   }
 }
 
-function handleSearch() {
-  searchQuery = document.getElementById('searchInput').value.trim();
-  renderGrid();
-}
+function handleSearch() { searchQuery = document.getElementById('searchInput').value.trim(); renderGrid(); }
 
 function overlayClickClose(e, id) {
-  if (e.target.id === id) {
-    if (id === 'viewerOverlay') closeViewer();
-    else if (id === 'uploadOverlay') closeUpload();
-    else if (id === 'googleSignInOverlay') closeGoogleSignIn();
-  }
+  if (e.target.id !== id) return;
+  if (id === 'viewerOverlay') closeViewer();
+  else if (id === 'uploadOverlay') closeUpload();
+  else if (id === 'googleSignInOverlay') closeGoogleSignIn();
 }
 
-// ── ACTIVE USERS ──────────────────────
+// ── ACTIVE USERS ───────────────────
 async function fetchActiveUsers() {
   try {
-    const r = await fetch(`${SB_URL}/rest/v1/chat_users?order=last_active.desc`, {
-      headers: { apikey: SB_KEY }
-    });
-    if (!r.ok) throw new Error('Failed to fetch active users');
+    const r = await fetch(`${SB_URL}/rest/v1/chat_users?order=last_active.desc`, { headers: { apikey: SB_KEY } });
+    if (!r.ok) throw new Error();
     chatUsers = await r.json();
     renderChatUsers();
-  } catch (e) {
-    console.error('Failed to fetch active users', e);
-  }
+  } catch {}
 }
-
 async function subscribeToActiveUsers() {
   if (usersChannelSubscribed) return;
   usersChannelSubscribed = true;
   const sb = await loadSupabaseSdk();
-  sb.channel('public:chat_users')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'chat_users' }, () => {
-      fetchActiveUsers();
-    })
-    .subscribe();
+  sb.channel('public:chat_users').on('postgres_changes', { event:'*', schema:'public', table:'chat_users' }, fetchActiveUsers).subscribe();
 }
 
-// Most recent DM exchanged with a given person (either direction), used
-// for the list-row preview text/time, native-messages-app style.
 function lastMessageWith(uid) {
   let last = null;
   for (const m of chatMessages) {
     const toUid = m.to_uid ?? null;
-    const isWithThisPerson = (m.uid === chatUserId && toUid === uid) || (m.uid === uid && toUid === chatUserId);
-    if (!isWithThisPerson) continue;
+    const isWith = (m.uid === chatUserId && toUid === uid) || (m.uid === uid && toUid === chatUserId);
+    if (!isWith) continue;
     if (!last || new Date(m.created_at) > new Date(last.created_at)) last = m;
   }
   return last;
@@ -1927,82 +1220,49 @@ function lastMessageWith(uid) {
 
 function formatListTime(iso) {
   if (!iso) return '';
-  const d = new Date(iso);
-  const now = new Date();
-  const sameDay = d.toDateString() === now.toDateString();
-  if (sameDay) return d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
-  const diffDays = Math.floor((now - d) / 86400000);
-  if (diffDays < 7) return d.toLocaleDateString([], { weekday: 'short' });
-  return d.toLocaleDateString([], { month: 'short', day: 'numeric' });
+  const d = new Date(iso), now = new Date();
+  if (d.toDateString() === now.toDateString()) return d.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});
+  const diff = Math.floor((now-d)/86400000);
+  if (diff < 7) return d.toLocaleDateString([],{weekday:'short'});
+  return d.toLocaleDateString([],{month:'short',day:'numeric'});
 }
 
 function renderChatUsers() {
   const list = document.getElementById('peopleList');
   const others = chatUsers.filter(u => u.uid !== chatUserId);
-
-  if (!others.length) {
-    list.innerHTML = '<div class="chat-list-empty">No one else has joined yet.</div>';
-    return;
-  }
-
+  if (!others.length) { list.innerHTML = '<div class="chat-list-empty">No one else has joined yet.</div>'; return; }
   list.innerHTML = others.map(u => {
     const last = lastMessageWith(u.uid);
-    const preview = last ? esc(last.text || '') : 'Tap to start chatting';
+    const preview = last ? esc(last.text||'') : 'Tap to start chatting';
     const timeStr = last ? formatListTime(last.created_at) : '';
-    // Unread = their most recent message to me hasn't been seen yet
-    // (tracked client-side via readThreads, reset whenever I open the thread).
-    const isUnread = last && last.uid === u.uid && !readThreads.has(u.uid + ':' + last.created_at);
-
+    const isUnread = last && last.uid === u.uid && !readThreads.has(u.uid+':'+last.created_at);
     return `
-      <div class="chat-list-row" onclick='openDM(${JSON.stringify({ uid: u.uid, name: u.name, photo: u.photo })})'>
-        <div class="chat-list-avatar">
-          ${u.photo ? `<img src="${esc(u.photo)}" alt="${esc(u.name)}">` : esc((u.name || '?').charAt(0).toUpperCase())}
-        </div>
+      <div class="chat-list-row" onclick='openDM(${JSON.stringify({uid:u.uid,name:u.name,photo:u.photo})})'>
+        <div class="chat-list-avatar">${u.photo?`<img src="${esc(u.photo)}" alt="${esc(u.name)}">`:(u.name||'?').charAt(0).toUpperCase()}</div>
         <div class="chat-list-body">
           <div class="chat-list-top-row">
-            <div class="chat-list-name">${esc(u.name || 'Unknown')}</div>
-            ${timeStr ? `<div class="chat-list-time">${timeStr}</div>` : ''}
+            <div class="chat-list-name">${esc(u.name||'Unknown')}</div>
+            ${timeStr?`<div class="chat-list-time">${timeStr}</div>`:''}
           </div>
           <div class="chat-list-preview-row">
             <div class="chat-list-preview">${preview}</div>
-            ${isUnread ? `<div class="chat-list-dot"></div>` : ''}
+            ${isUnread?`<div class="chat-list-dot"></div>`:''}
           </div>
         </div>
       </div>`;
   }).join('');
 }
 
-// ── THREAD SWITCHING (list <-> open 1:1 conversation) ──────────
-// Tracks which (person, lastMessageTimestamp) pairs the current user has
-// already seen, purely client-side, so the unread dot clears once a
-// thread is opened. Doesn't persist across reloads — good enough for a
-// lightweight "have I seen this" indicator without a schema change.
-const readThreads = new Set();
-
-function updateThreadHeader() {
-  const avatar = document.getElementById('chatThreadAvatar');
-  const name = document.getElementById('chatThreadName');
-  if (currentThread) {
-    avatar.innerHTML = currentThread.photo
-      ? `<img src="${esc(currentThread.photo)}" alt="${esc(currentThread.name)}">`
-      : esc((currentThread.name || '?').charAt(0).toUpperCase());
-    name.textContent = currentThread.name || 'Unknown';
-  }
-}
-
 function openDM(person) {
-  if (!googleUser) {
-    openGoogleSignIn();
-    return;
-  }
+  if (!googleUser) { openGoogleSignIn(); return; }
   currentThread = { uid: person.uid, name: person.name, photo: person.photo };
-
   const last = lastMessageWith(person.uid);
-  if (last) readThreads.add(person.uid + ':' + last.created_at);
-
-  updateThreadHeader();
+  if (last) readThreads.add(person.uid+':'+last.created_at);
+  const avatar = document.getElementById('chatThreadAvatar');
+  const name   = document.getElementById('chatThreadName');
+  avatar.innerHTML = currentThread.photo ? `<img src="${esc(currentThread.photo)}" alt="${esc(currentThread.name)}">` : esc((currentThread.name||'?').charAt(0).toUpperCase());
+  name.textContent = currentThread.name || 'Unknown';
   renderChatMessages();
-
   document.getElementById('chatListView').classList.add('hidden');
   document.getElementById('chatThreadView').classList.add('open');
 }
@@ -2014,10 +1274,7 @@ function closeThread() {
   renderChatUsers();
 }
 
-// ── CHAT ──────────────────────────────
-let chatPollInterval = null;
-let lastMessageId = null;
-
+// ── CHAT MESSAGES ──────────────────
 async function fetchMessages() {
   try {
     const url = lastMessageId
@@ -2027,59 +1284,28 @@ async function fetchMessages() {
     if (!r.ok) return;
     const msgs = await r.json();
     if (msgs.length > 0) {
-      if (!lastMessageId) {
-        // First load — replace all
-        chatMessages = msgs;
-      } else {
-        // Incremental — append only new ones
-        for (const m of msgs) {
-          if (!chatMessages.find(x => x.id === m.id)) chatMessages.push(m);
-        }
-      }
-      lastMessageId = msgs[msgs.length - 1].id;
-      renderChatMessages();
-      renderChatUsers(); // keep list previews/unread dots current
-    } else if (!lastMessageId) {
-      // First load returned empty
-      renderChatMessages();
-    }
-  } catch (e) {
-    console.error('fetchMessages error', e);
-  }
+      if (!lastMessageId) chatMessages = msgs;
+      else for (const m of msgs) { if (!chatMessages.find(x => x.id === m.id)) chatMessages.push(m); }
+      lastMessageId = msgs[msgs.length-1].id;
+      renderChatMessages(); renderChatUsers();
+    } else if (!lastMessageId) { renderChatMessages(); }
+  } catch {}
 }
 
 async function initChat() {
   if (chatInitialized) return;
-  if (!googleUser) return;
-
-  chatInitialized = true; // set early so re-enters don't stack
-
-  // 1. Load messages immediately via plain fetch — no SDK needed
+  chatInitialized = true;
   await fetchMessages();
-
-  // 2. Register presence and refresh users
   await registerPresence();
   await fetchActiveUsers();
-
-  // 3. Poll every 3s for new messages — fast, works without SDK
   chatPollInterval = setInterval(fetchMessages, 3000);
-
-  // 4. Also try SDK realtime as a bonus (reduces latency to ~0 once connected)
   presenceHeartbeat = setInterval(registerPresence, 20000);
-
   loadSupabaseSdk().then(sb => {
-    sb.channel('public:chat_messages')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' }, payload => {
-        const m = payload.new;
-        if (!chatMessages.find(x => x.id === m.id)) {
-          chatMessages.push(m);
-          lastMessageId = m.id;
-          renderChatMessages();
-          renderChatUsers();
-        }
-      })
-      .subscribe();
-  }).catch(() => {/* realtime unavailable — polling covers it */});
+    sb.channel('public:chat_messages').on('postgres_changes', { event:'INSERT', schema:'public', table:'chat_messages' }, payload => {
+      const m = payload.new;
+      if (!chatMessages.find(x => x.id === m.id)) { chatMessages.push(m); lastMessageId = m.id; renderChatMessages(); renderChatUsers(); }
+    }).subscribe();
+  }).catch(()=>{});
 }
 
 async function registerPresence() {
@@ -2087,31 +1313,16 @@ async function registerPresence() {
   try {
     await fetch(`${SB_URL}/rest/v1/chat_users`, {
       method: 'POST',
-      headers: {
-        apikey: SB_KEY,
-        'Content-Type': 'application/json',
-        Prefer: 'resolution=merge-duplicates,return=minimal'
-      },
-      body: JSON.stringify({
-        uid: chatUserId,
-        name: googleUser.name,
-        email: googleUser.email,
-        photo: googleUser.picture,
-        last_active: new Date().toISOString()
-      })
+      headers: { apikey: SB_KEY, 'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates,return=minimal' },
+      body: JSON.stringify({ uid: chatUserId, name: googleUser.name, email: googleUser.email, photo: googleUser.picture, last_active: new Date().toISOString() })
     });
-  } catch (e) {
-    console.error('Failed to register presence', e);
-  }
+  } catch {}
 }
 
 function messageBelongsToCurrentThread(m) {
   const toUid = m.to_uid ?? null;
-  if (!currentThread) {
-    return !toUid;
-  }
-  return (m.uid === chatUserId && toUid === currentThread.uid) ||
-         (m.uid === currentThread.uid && toUid === chatUserId);
+  if (!currentThread) return !toUid;
+  return (m.uid === chatUserId && toUid === currentThread.uid) || (m.uid === currentThread.uid && toUid === chatUserId);
 }
 
 function findUserByUid(uid) {
@@ -2122,124 +1333,74 @@ function findUserByUid(uid) {
 function renderChatMessages() {
   const box = document.getElementById('chatMessages');
   const visible = chatMessages.filter(messageBelongsToCurrentThread);
-
-  // Remember if we were near the bottom before re-render
   const atBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 80;
-
   if (visible.length === 0) {
     box.innerHTML = currentThread
-      ? `<div style="text-align:center; padding:40px; color:var(--text3);">No messages with ${esc(currentThread.name)} yet. Say hi!</div>`
-      : '<div style="text-align:center; padding:40px; color:var(--text3);">No messages yet. Say hi!</div>';
+      ? `<div style="text-align:center;padding:40px;color:var(--text3);">No messages with ${esc(currentThread.name)} yet. Say hi!</div>`
+      : '<div style="text-align:center;padding:40px;color:var(--text3);">No messages yet.</div>';
     return;
   }
-
   box.innerHTML = visible.map(m => {
     const isMe = m.uid === chatUserId;
     const sender = findUserByUid(m.uid);
     const photo = sender?.photo;
-    const initial = (m.name || sender?.name || '?').charAt(0).toUpperCase();
-    const avatarInner = photo ? `<img src="${esc(photo)}" alt="${esc(m.name || '')}">` : esc(initial);
-    const timeStr = m.created_at ? new Date(m.created_at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : '';
-
+    const initial = (m.name||sender?.name||'?').charAt(0).toUpperCase();
+    const avatarInner = photo ? `<img src="${esc(photo)}" alt="">` : esc(initial);
+    const timeStr = m.created_at ? new Date(m.created_at).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'}) : '';
     return `
-      <div class="chat-msg ${isMe ? 'me' : ''}">
+      <div class="chat-msg ${isMe?'me':''}">
         <div class="chat-msg-avatar">${avatarInner}</div>
         <div class="chat-msg-content">
-          ${!isMe ? `<div class="chat-msg-name">${esc(m.name || 'Unknown')}</div>` : ''}
-          <div class="chat-msg-bubble">${esc(m.text || '')}</div>
-          ${timeStr ? `<div class="chat-msg-time">${timeStr}</div>` : ''}
+          ${!isMe?`<div class="chat-msg-name">${esc(m.name||'Unknown')}</div>`:''}
+          <div class="chat-msg-bubble">${esc(m.text||'')}</div>
+          ${timeStr?`<div class="chat-msg-time">${timeStr}</div>`:''}
         </div>
       </div>`;
   }).join('');
-
-  // Only auto-scroll if we were already at the bottom
   if (atBottom) box.scrollTop = box.scrollHeight;
 }
 
 function sendChatMessage() {
-  if (!chatUserId || !googleUser) {
-    toast('Please sign in first', 'err');
-    return;
-  }
+  if (!chatUserId || !googleUser) { toast('Please sign in first', 'err'); return; }
   const input = document.getElementById('chatInput');
   const text = input.value.trim();
   if (!text) return;
-
   input.value = '';
-
-  const payload = {
-    uid: chatUserId,
-    name: googleUser.name,
-    text: text
-  };
-
-  if (currentThread && dmSupported) {
-    payload.to_uid = currentThread.uid;
-  }
-
-  try {
-    fetch(`${SB_URL}/rest/v1/chat_messages`, {
-      method: 'POST',
-      headers: {
-        apikey: SB_KEY,
-        'Content-Type': 'application/json',
-        Prefer: 'return=minimal'
-      },
-      body: JSON.stringify(payload)
-    }).then(r => {
-      if (!r.ok && currentThread && payload.to_uid) {
-        dmSupported = false;
-        if (!dmWarned) {
-          dmWarned = true;
-          toast('DMs need a one-time setup', 'err');
-        }
-        delete payload.to_uid;
-        return fetch(`${SB_URL}/rest/v1/chat_messages`, {
-          method: 'POST',
-          headers: {
-            apikey: SB_KEY,
-            'Content-Type': 'application/json',
-            Prefer: 'return=minimal'
-          },
-          body: JSON.stringify(payload)
-        });
-      }
-      return r;
-    });
-
-    chatMessages.push({ ...payload, created_at: new Date().toISOString() });
-    renderChatMessages();
-  } catch (e) {
-    console.error('Failed to send message', e);
-    toast('Failed to send message', 'err');
-  }
-
+  const payload = { uid: chatUserId, name: googleUser.name, text };
+  if (currentThread && dmSupported) payload.to_uid = currentThread.uid;
+  fetch(`${SB_URL}/rest/v1/chat_messages`, {
+    method: 'POST',
+    headers: { apikey: SB_KEY, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+    body: JSON.stringify(payload)
+  }).then(r => {
+    if (!r.ok && currentThread && payload.to_uid) {
+      dmSupported = false;
+      if (!dmWarned) { dmWarned = true; toast('DMs need a one-time setup', 'err'); }
+      const fb = { uid: chatUserId, name: googleUser.name, text };
+      return fetch(`${SB_URL}/rest/v1/chat_messages`, { method:'POST', headers:{ apikey:SB_KEY,'Content-Type':'application/json',Prefer:'return=minimal'}, body: JSON.stringify(fb) });
+    }
+  });
+  chatMessages.push({ ...payload, created_at: new Date().toISOString() });
+  renderChatMessages();
   registerPresence();
 }
 
-// ── UTILS ────────────────────────────
+// ── UTILS ───────────────────────────
 function timeAgo(iso) {
-  const d = new Date(iso);
-  const s = Math.floor((Date.now() - d) / 1000);
-  if (s < 60) return 'now';
-  if (s < 3600) return Math.floor(s/60) + 'm ago';
-  if (s < 86400) return Math.floor(s/3600) + 'h ago';
-  if (s < 604800) return Math.floor(s/86400) + 'd ago';
-  return d.toLocaleDateString();
+  const s = Math.floor((Date.now()-new Date(iso))/1000);
+  if (s<60) return 'now';
+  if (s<3600) return Math.floor(s/60)+'m ago';
+  if (s<86400) return Math.floor(s/3600)+'h ago';
+  if (s<604800) return Math.floor(s/86400)+'d ago';
+  return new Date(iso).toLocaleDateString();
 }
-
-function esc(s) {
-  const d = document.createElement('div');
-  d.textContent = s;
-  return d.innerHTML;
-}
-
-function toast(msg, type = 'ok') {
+function esc(s) { const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+function toast(msg, type='ok') {
   const el = document.createElement('div');
   el.className = `toast ${type}`;
-  el.textContent = (type === 'ok' ? '✓ ' : '✕ ') + msg;
+  el.textContent = (type==='ok'?'✓ ':'✕ ') + msg;
   document.getElementById('toastWrap').appendChild(el);
-  setTimeout(() => el.remove(), 3500);
+  setTimeout(()=>el.remove(), 3500);
 }
 </script>
 </body>
