@@ -51,19 +51,19 @@
       .theme-active { background: white; box-shadow: 0 1px 3px rgba(0,0,0,.1); border-radius: 6px; }
       .dark .theme-active { background: #334155; }
       
-      /* Input Group styling for Domain */
       .domain-suffix-group:focus-within { border-color: #6366f1; ring: 2px solid rgba(99,102,241,0.5); }
     </style>
   </head>
   <body class="bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 transition-colors duration-150 overflow-hidden">
     
     <div class="flex h-screen overflow-hidden">
+      <!-- SIDEBAR (Desktop) -->
       <aside class="hidden md:flex flex-col w-64 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 shrink-0">
-        <div class="flex items-center gap-2.5 h-16 px-4 border-b border-slate-200 dark:border-slate-700">
+        <div class="flex items-center gap-2.5 h-12 px-4 border-b border-slate-200 dark:border-slate-700">
           <div class="p-1.5 bg-indigo-600 rounded-lg shadow-[0_0_15px_rgba(79,70,229,0.4)]">
-            <i data-lucide="cloud" class="w-5 h-5 text-white"></i>
+            <i data-lucide="cloud" class="w-4 h-4 text-white"></i>
           </div>
-          <span class="text-xl font-bold tracking-tight">FostHub</span>
+          <span class="text-lg font-bold tracking-tight">FostHub</span>
         </div>
         <nav class="flex-1 px-2 py-4 space-y-0.5 overflow-y-auto scrollbar-thin">
           <a class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer font-medium text-sm" data-filter="all" onclick="setFilter('all')">
@@ -93,7 +93,7 @@
         </nav>
         <div class="p-3 border-t border-slate-200 dark:border-slate-700">
           <div class="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer transition-colors relative" onclick="toggleUserMenu(event)" id="userMenu">
-            <div id="userAvatarTop" class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold text-sm shrink-0 overflow-hidden">
+            <div id="userAvatarTop" class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold text-sm shrink-0 overflow-hidden shadow-sm">
               <span id="userInitial">?</span>
             </div>
             <div class="flex-1 min-w-0">
@@ -102,6 +102,10 @@
             </div>
             <i data-lucide="chevron-up" class="w-4 h-4 text-slate-400 shrink-0"></i>
             <div id="userDropdown" class="hidden absolute bottom-full left-0 right-0 mb-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl overflow-hidden z-50">
+              <div class="flex items-center gap-2 p-3 border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700" onclick="triggerAvatarUpload()">
+                <i data-lucide="image" class="w-4 h-4 text-slate-500"></i>
+                <span class="text-sm font-medium">Change Avatar</span>
+              </div>
               <div class="flex items-center gap-2 p-3 border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700" onclick="toggleThemeOptions(event)">
                 <i data-lucide="palette" class="w-4 h-4 text-slate-500"></i>
                 <span class="text-sm font-medium">Theme</span>
@@ -121,28 +125,31 @@
         </div>
       </aside>
 
-      <main class="flex-1 flex flex-col overflow-hidden min-w-0">
-        <header class="flex items-center justify-between h-16 px-4 md:px-6 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 shrink-0 z-30">
+      <!-- MAIN CONTENT -->
+      <main class="flex-1 flex flex-col overflow-hidden min-w-0 relative">
+        
+        <!-- THIN HEADER -->
+        <header id="mainHeader" class="flex items-center justify-between h-12 px-4 md:px-6 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 shrink-0 z-30 transition-all">
           <div class="flex items-center gap-3">
             <div class="flex items-center gap-2 md:hidden">
-              <div class="p-1.5 bg-indigo-600 rounded-md">
+              <div class="p-1 bg-indigo-600 rounded-md shadow-[0_0_10px_rgba(79,70,229,0.4)]">
                 <i data-lucide="cloud" class="w-4 h-4 text-white"></i>
               </div>
-              <span class="font-bold text-lg">FostHub</span>
+              <span class="font-bold text-base">FostHub</span>
             </div>
             <div class="relative hidden sm:block">
-              <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none"></i>
-              <input id="searchInput" type="text" placeholder="Search posts, files..." class="pl-9 pr-4 py-2 text-sm bg-slate-100 dark:bg-slate-700 border border-transparent focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-600 rounded-lg transition-all w-56 md:w-72" oninput="handleSearch()" />
+              <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none"></i>
+              <input id="searchInput" type="text" placeholder="Search..." class="pl-9 pr-4 py-1.5 text-sm bg-slate-100 dark:bg-slate-700 border border-transparent focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-600 rounded-lg transition-all w-56 md:w-72 outline-none" oninput="handleSearch()" />
             </div>
           </div>
           <div class="flex items-center gap-2">
-            <div class="hidden md:flex items-center bg-slate-100 dark:bg-slate-700 rounded-lg p-1 gap-0.5">
-              <button onclick="setThemeFn(event,'light')" data-theme="light" class="theme-btn p-1.5 rounded transition-colors hover:bg-white dark:hover:bg-slate-600"><i data-lucide="sun" class="w-4 h-4"></i></button>
-              <button onclick="setThemeFn(event,'dark')" data-theme="dark" class="theme-btn p-1.5 rounded transition-colors hover:bg-white dark:hover:bg-slate-600"><i data-lucide="moon" class="w-4 h-4"></i></button>
-              <button onclick="setThemeFn(event,'system')" data-theme="system" class="theme-btn p-1.5 rounded transition-colors hover:bg-white dark:hover:bg-slate-600"><i data-lucide="monitor" class="w-4 h-4"></i></button>
+            <div class="hidden md:flex items-center bg-slate-100 dark:bg-slate-700 rounded-lg p-0.5 gap-0.5">
+              <button onclick="setThemeFn(event,'light')" data-theme="light" class="theme-btn p-1.5 rounded transition-colors hover:bg-white dark:hover:bg-slate-600"><i data-lucide="sun" class="w-3.5 h-3.5"></i></button>
+              <button onclick="setThemeFn(event,'dark')" data-theme="dark" class="theme-btn p-1.5 rounded transition-colors hover:bg-white dark:hover:bg-slate-600"><i data-lucide="moon" class="w-3.5 h-3.5"></i></button>
+              <button onclick="setThemeFn(event,'system')" data-theme="system" class="theme-btn p-1.5 rounded transition-colors hover:bg-white dark:hover:bg-slate-600"><i data-lucide="monitor" class="w-3.5 h-3.5"></i></button>
             </div>
             <div class="md:hidden relative" id="userMenuMobile" onclick="toggleUserMenuMobile(event)">
-              <div id="userAvatarMobile" class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold text-sm overflow-hidden cursor-pointer border-2 border-slate-200 dark:border-slate-600">
+              <div id="userAvatarMobile" class="w-7 h-7 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold text-xs overflow-hidden cursor-pointer border border-slate-200 dark:border-slate-600 shadow-sm">
                 <span id="userInitialMobile">?</span>
               </div>
               <div id="userDropdownMobile" class="hidden absolute top-full right-0 mt-2 w-52 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl overflow-hidden z-50">
@@ -151,68 +158,88 @@
                   <p class="text-xs text-slate-500" id="mobileUserEmail"></p>
                 </div>
                 <div class="p-2 space-y-0.5">
+                  <button onclick="triggerAvatarUpload()" class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 text-sm">
+                    <i data-lucide="image" class="w-4 h-4"></i>Change Avatar
+                  </button>
                   <button onclick="logOut(event)" class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-slate-700 text-sm">
                     <i data-lucide="log-out" class="w-4 h-4"></i>Sign out
                   </button>
                 </div>
               </div>
             </div>
-            <button id="btnCreate" onclick="openUpload()" class="hidden md:flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-3.5 py-2 rounded-lg text-sm font-medium transition-all">
+            <button id="btnCreate" onclick="openUpload()" class="hidden md:flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition-all shadow-sm">
               <i data-lucide="plus" class="w-4 h-4"></i>Create
             </button>
           </div>
         </header>
 
-        <div class="flex-1 overflow-y-auto scrollbar-thin" id="mainScroll">
-          <div id="feedView" class="p-4 md:p-6 pb-24 md:pb-6">
-            <div class="flex items-center justify-between mb-6">
+        <div class="flex-1 overflow-y-auto scrollbar-thin bg-slate-50 dark:bg-slate-900" id="mainScroll">
+          
+          <!-- YOUTUBE SIZED FEED VIEW -->
+          <div id="feedView" class="pb-24 md:pb-6">
+            <div class="px-4 py-4 md:px-6 md:py-6 flex items-center justify-between max-w-3xl mx-auto">
               <h1 class="text-xl font-bold" id="feedTitle">Recent Posts</h1>
               <button onclick="loadPosts(true)" class="flex items-center gap-1.5 text-sm text-indigo-600 dark:text-indigo-400 hover:underline">
                 Refresh <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
               </button>
             </div>
-            <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-5" id="grid">
-              <div class="col-span-full flex justify-center py-16"><div class="spinner"></div></div>
+            
+            <!-- Feed Grid: Max width container for YouTube-style stacked cards -->
+            <div class="grid grid-cols-1 max-w-3xl mx-auto md:gap-6" id="grid">
+              <div class="flex justify-center py-16"><div class="spinner"></div></div>
             </div>
           </div>
 
-          <div id="chatView" class="hidden h-full" style="height: calc(100vh - 64px);">
+          <!-- CHAT VIEW (Takes full height when mainHeader is hidden) -->
+          <div id="chatView" class="hidden h-full">
             <div class="flex h-full">
+              <!-- People List Pane -->
               <div id="chatListPane" class="w-full md:w-80 lg:w-96 shrink-0 flex flex-col border-r border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-                <div class="px-4 py-4 border-b border-slate-200 dark:border-slate-700"><h2 class="text-lg font-bold">Messages</h2></div>
+                <div class="px-4 py-3 border-b border-slate-200 dark:border-slate-700 flex items-center"><h2 class="text-base font-bold">Messages</h2></div>
                 <div id="peopleList" class="flex-1 overflow-y-auto scrollbar-thin"></div>
               </div>
+              
+              <!-- Active Thread Pane (Desktop) -->
               <div id="chatThreadPane" class="hidden md:flex flex-1 flex-col bg-slate-50 dark:bg-slate-900 min-w-0">
                 <div id="chatPlaceholder" class="flex-1 flex flex-col items-center justify-center text-center p-8">
                   <div class="w-16 h-16 bg-slate-200 dark:bg-slate-700 rounded-full flex items-center justify-center mb-4"><i data-lucide="message-circle" class="w-8 h-8 text-slate-400"></i></div>
                   <h3 class="text-lg font-medium text-slate-600 dark:text-slate-300">Select a conversation</h3>
                 </div>
+                
                 <div id="chatThreadView" class="hidden flex-col flex-1 min-h-0">
-                  <div class="flex items-center gap-3 px-4 py-3.5 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shrink-0">
+                  <!-- Thin Thread Header -->
+                  <div class="flex items-center gap-3 px-3 py-2 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shrink-0">
                     <button class="md:hidden p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700" onclick="closeThread()"><i data-lucide="arrow-left" class="w-4 h-4"></i></button>
-                    <div id="chatThreadAvatar" class="w-9 h-9 rounded-full bg-indigo-600 flex items-center justify-center font-bold text-white text-sm shrink-0 overflow-hidden"></div>
+                    <div id="chatThreadAvatar" class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center font-bold text-white text-xs shrink-0 overflow-hidden shadow-sm"></div>
                     <p class="font-semibold text-sm" id="chatThreadName">–</p>
                   </div>
+                  
                   <div id="chatMessages" class="flex-1 overflow-y-auto scrollbar-thin p-4 flex flex-col gap-3 min-h-0"></div>
-                  <div class="px-4 py-3 border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shrink-0">
+                  
+                  <div class="px-4 py-2.5 border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shrink-0">
                     <div class="flex items-center gap-2">
-                      <input id="chatInput" type="text" placeholder="Type a message…" class="flex-1 px-4 py-2.5 bg-slate-100 dark:bg-slate-700 rounded-full text-sm outline-none" onkeypress="if(event.key==='Enter') sendChatMessage()" />
-                      <button id="sendBtn" onclick="sendChatMessage()" class="p-2.5 bg-indigo-600 hover:bg-indigo-700 rounded-full text-white"><i data-lucide="send" class="w-4 h-4"></i></button>
+                      <input id="chatInput" type="text" placeholder="Type a message…" class="flex-1 px-4 py-2 bg-slate-100 dark:bg-slate-700 rounded-full text-sm outline-none" onkeypress="if(event.key==='Enter') sendChatMessage()" />
+                      <button id="sendBtn" onclick="sendChatMessage()" class="p-2 bg-indigo-600 hover:bg-indigo-700 rounded-full text-white shadow-sm"><i data-lucide="send" class="w-4 h-4"></i></button>
                     </div>
                   </div>
                 </div>
               </div>
-              <div id="chatThreadMobile" class="hidden absolute inset-0 flex flex-col bg-slate-50 dark:bg-slate-900 z-40" style="top:64px; bottom:64px;">
-                <div class="flex items-center gap-3 px-4 py-3.5 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shrink-0">
+
+              <!-- Active Thread Overlay (Mobile) -->
+              <div id="chatThreadMobile" class="hidden fixed top-0 bottom-16 left-0 right-0 flex-col bg-slate-50 dark:bg-slate-900 z-40">
+                <!-- Thin Thread Header -->
+                <div class="flex items-center gap-3 px-3 py-2 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shrink-0">
                   <button class="p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700" onclick="closeThread()"><i data-lucide="arrow-left" class="w-4 h-4"></i></button>
-                  <div id="chatThreadAvatarMobile" class="w-9 h-9 rounded-full bg-indigo-600 flex items-center justify-center font-bold text-white text-sm shrink-0 overflow-hidden"></div>
+                  <div id="chatThreadAvatarMobile" class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center font-bold text-white text-xs shrink-0 overflow-hidden shadow-sm"></div>
                   <p class="font-semibold text-sm" id="chatThreadNameMobile">–</p>
                 </div>
+                
                 <div id="chatMessagesMobile" class="flex-1 overflow-y-auto scrollbar-thin p-4 flex flex-col gap-3 min-h-0"></div>
-                <div class="px-4 py-3 border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shrink-0">
+                
+                <div class="px-4 py-2.5 border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shrink-0">
                   <div class="flex items-center gap-2">
-                    <input id="chatInputMobile" type="text" placeholder="Type a message…" class="flex-1 px-4 py-2.5 bg-slate-100 dark:bg-slate-700 rounded-full text-sm outline-none" onkeypress="if(event.key==='Enter') sendChatMessage()" />
-                    <button onclick="sendChatMessage()" class="p-2.5 bg-indigo-600 hover:bg-indigo-700 rounded-full text-white"><i data-lucide="send" class="w-4 h-4"></i></button>
+                    <input id="chatInputMobile" type="text" placeholder="Type a message…" class="flex-1 px-4 py-2 bg-slate-100 dark:bg-slate-700 rounded-full text-sm outline-none" onkeypress="if(event.key==='Enter') sendChatMessage()" />
+                    <button onclick="sendChatMessage()" class="p-2 bg-indigo-600 hover:bg-indigo-700 rounded-full text-white shadow-sm"><i data-lucide="send" class="w-4 h-4"></i></button>
                   </div>
                 </div>
               </div>
@@ -220,7 +247,8 @@
           </div>
         </div>
 
-        <nav class="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 z-40 grid grid-cols-5">
+        <!-- MOBILE BOTTOM NAV -->
+        <nav class="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 z-50 grid grid-cols-5">
           <button class="bnav-item flex flex-col items-center justify-center gap-1 text-slate-500" data-filter="all" onclick="setFilter('all')"><i data-lucide="home" class="w-5 h-5"></i><span class="text-[10px] font-semibold">Home</span></button>
           <button class="bnav-item flex flex-col items-center justify-center gap-1 text-slate-500" data-filter="media" onclick="setFilter('media')"><i data-lucide="image" class="w-5 h-5"></i><span class="text-[10px] font-semibold">Media</span></button>
           <button id="fab" onclick="openUpload()" class="flex flex-col items-center justify-center"><div class="w-12 h-12 bg-indigo-600 rounded-full flex items-center justify-center -mt-5 shadow-lg border-4 border-white dark:border-slate-800"><i data-lucide="plus" class="w-5 h-5 text-white"></i></div></button>
@@ -230,27 +258,30 @@
       </main>
     </div>
 
+    <!-- LAYER OVERLAYS & AVATAR UPLOAD -->
+    <input type="file" id="avatarInput" accept="image/*" class="hidden" onchange="handleAvatarUpload(event)" />
     <div id="postMenu" class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xl overflow-hidden"></div>
     <div id="toastWrap"></div>
 
-    <div id="viewerOverlay" class="fixed inset-0 z-50 hidden items-center justify-center p-3 modal-bg" onclick="overlayClickClose(event,'viewerOverlay')">
-      <div class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden anim-modal">
-        <div class="flex items-center justify-between px-5 py-4 border-b border-slate-200 dark:border-slate-700 shrink-0">
-          <h3 class="font-semibold text-sm truncate flex-1 mr-3" id="viewerTitle">–</h3>
-          <button onclick="closeViewer()" class="p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700"><i data-lucide="x" class="w-4 h-4"></i></button>
+    <!-- VIEWER MODAL -->
+    <div id="viewerOverlay" class="fixed inset-0 z-50 hidden items-center justify-center p-0 md:p-3 modal-bg" onclick="overlayClickClose(event,'viewerOverlay')">
+      <div class="relative bg-white dark:bg-slate-800 md:rounded-2xl shadow-2xl w-full h-full md:h-auto md:max-w-4xl md:max-h-[90vh] flex flex-col overflow-hidden anim-modal">
+        <div class="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-slate-700 shrink-0">
+          <h3 class="font-semibold text-base truncate flex-1 mr-3" id="viewerTitle">–</h3>
+          <button onclick="closeViewer()" class="p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700"><i data-lucide="x" class="w-5 h-5"></i></button>
         </div>
-        <div id="viewerContent" class="flex-1 overflow-auto min-h-0 bg-slate-50 dark:bg-slate-900/50"></div>
-        <div class="flex items-center gap-3 px-5 py-4 border-t border-slate-200 dark:border-slate-700 shrink-0">
-          <div id="viewerAvatar" class="w-9 h-9 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold text-sm shrink-0 overflow-hidden"></div>
-          <div class="min-w-0">
-            <p class="font-semibold text-sm truncate" id="viewerAuthor">–</p>
-            <p class="text-xs text-slate-400" id="viewerDate">–</p>
+        <div id="viewerContent" class="flex-1 overflow-auto min-h-0 bg-black flex items-center justify-center"></div>
+        <div class="flex items-center gap-3 px-4 py-4 border-t border-slate-200 dark:border-slate-700 shrink-0 bg-white dark:bg-slate-800">
+          <div id="viewerAvatar" class="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold text-sm shrink-0 overflow-hidden shadow-sm"></div>
+          <div class="min-w-0 flex-1">
+            <p class="font-semibold text-sm truncate text-slate-900 dark:text-slate-100" id="viewerAuthor">–</p>
+            <p class="text-xs text-slate-500" id="viewerDate">–</p>
           </div>
         </div>
-        <div id="viewerBody" class="px-5 pb-4 shrink-0"></div>
       </div>
     </div>
 
+    <!-- UPLOAD MODAL -->
     <div id="uploadOverlay" class="fixed inset-0 z-50 hidden items-center justify-center p-4 modal-bg" onclick="overlayClickClose(event,'uploadOverlay')">
       <div class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden anim-modal">
         <div class="flex items-center justify-between px-5 py-4 border-b border-slate-200 dark:border-slate-700">
@@ -286,11 +317,10 @@
       </div>
     </div>
 
+    <!-- FOSTHUB AUTH MODAL -->
     <div id="fosthubAuthOverlay" class="fixed inset-0 z-50 hidden items-center justify-center p-4 modal-bg" onclick="overlayClickClose(event,'fosthubAuthOverlay')">
       <div class="relative glass-panel rounded-2xl w-full max-w-sm overflow-hidden anim-modal border-t border-indigo-500/30">
-        
         <div class="absolute -top-24 -right-24 w-48 h-48 bg-indigo-600 rounded-full mix-blend-screen filter blur-[70px] opacity-40 pointer-events-none"></div>
-
         <div class="p-8 relative z-10 text-slate-100">
           <div class="flex justify-center mb-6">
             <div class="p-3 bg-indigo-600/20 rounded-xl border border-indigo-500/30 shadow-[0_0_20px_rgba(79,70,229,0.4)]">
@@ -332,6 +362,7 @@
       </div>
     </div>
 
+    <!-- CORE SCRIPTS -->
     <script>
       lucide.createIcons();
 
@@ -341,7 +372,7 @@
       const TABLE  = 'homework';
       const THEME_KEY   = 'fosthub_theme';
       const SESSION_KEY = 'posthub_session';
-      const ADMIN_EMAIL = 'mohammadmominwani123@fosthub.com';
+      const ADMIN_EMAIL = 'momin@fosthub.com'; // Granted new admin rights
 
       let allPosts = [], activeFilter = 'all', searchQuery = '', selectedFile = null;
       let supabase = null, supabaseReadyPromise = null;
@@ -478,12 +509,9 @@
           : 'Already have an account? <span class="text-indigo-400 hover:text-indigo-300 hover:underline cursor-pointer font-medium" onclick="toggleAuthMode()">Sign in</span>';
       }
 
-      // WebView safe offline hashing algorithm (Ensures cross-platform capability)
       function generateHash(str) {
         let hash = 5381;
-        for (let i = 0; i < str.length; i++) {
-          hash = ((hash << 5) + hash) + str.charCodeAt(i); 
-        }
+        for (let i = 0; i < str.length; i++) { hash = ((hash << 5) + hash) + str.charCodeAt(i); }
         return "fHx_" + Math.abs(hash).toString(16) + btoa(str).slice(0, 12);
       }
 
@@ -492,7 +520,6 @@
         const pass = el('authPassword').value;
         if (!rawUser || !pass) { toast('Fields cannot be empty', 'err'); return; }
         
-        // Sanitize - remove spaces and trailing tags if user types them
         const cleanUser = rawUser.replace(/@fosthub\.com$/, '').replace(/[^a-z0-9_.]/g, '');
         if (cleanUser.length < 3) { toast('Username minimum 3 characters', 'err'); return; }
         
@@ -507,12 +534,10 @@
             const pass2 = el('authConfirmPass').value;
             if (pass !== pass2) { toast('Passwords mismatch', 'err'); throw new Error('mismatch'); }
             
-            // Check uniqueness
             const check = await fetch(`${SB_URL}/rest/v1/fosthub_users?username=eq.${cleanUser}`, { headers: { apikey: SB_KEY } });
             const existing = await check.json();
             if (existing.length > 0) { toast('Username already taken', 'err'); throw new Error('exists'); }
 
-            // Create record
             const ins = await fetch(`${SB_URL}/rest/v1/fosthub_users`, {
               method: 'POST',
               headers: { apikey: SB_KEY, 'Content-Type': 'application/json', Prefer: 'return=representation' },
@@ -528,7 +553,6 @@
             toast('Account created successfully', 'ok');
 
           } else {
-            // Login Query
             const sel = await fetch(`${SB_URL}/rest/v1/fosthub_users?username=eq.${cleanUser}&password_hash=eq.${passHash}`, { headers: { apikey: SB_KEY } });
             const users = await sel.json();
             if (!users || users.length === 0) { toast('Invalid credentials', 'err'); throw new Error('invalid'); }
@@ -554,7 +578,6 @@
         closeFostHubAuth();
         if (activeFilter === 'people') initChat();
         
-        // Auto-update last active on sign-in
         fetch(`${SB_URL}/rest/v1/fosthub_users?id=eq.${profile.id}`, {
             method:'PATCH', headers:{apikey:SB_KEY,'Content-Type':'application/json'},
             body: JSON.stringify({last_active:new Date().toISOString()})
@@ -577,11 +600,49 @@
       }
 
       /* ========================================================
-         POSTS & FEED
+         PROFILE PICTURE UPLOADER
+      ======================================================== */
+      function triggerAvatarUpload() { el('avatarInput').click(); }
+      async function handleAvatarUpload(e) {
+        const file = e.target.files[0];
+        if (!file || !currentUser) return;
+        if (file.size > 2*1024*1024) { toast('Avatar limit is 2MB max', 'err'); return; }
+        
+        toast('Saving Profile Picture...', 'ok');
+        closeUserDropdown();
+        document.getElementById('userDropdownMobile')?.classList.add('hidden');
+        
+        try {
+          const safeName = `avatar_${currentUser.username}_${Date.now()}`;
+          const r = await fetch(`${SB_URL}/storage/v1/object/${BUCKET}/${safeName}`, {
+            method: 'POST',
+            headers: { apikey:SB_KEY, Authorization:`Bearer ${SB_KEY}`, 'Content-Type': file.type },
+            body: file
+          });
+          if (!r.ok) throw new Error();
+          
+          const fileUrl = `${SB_URL}/storage/v1/object/public/${BUCKET}/${safeName}`;
+          
+          await fetch(`${SB_URL}/rest/v1/fosthub_users?id=eq.${currentUser.id}`, {
+            method: 'PATCH',
+            headers: { apikey:SB_KEY, 'Content-Type':'application/json' },
+            body: JSON.stringify({ avatar_url: fileUrl })
+          });
+          
+          currentUser.avatar_url = fileUrl;
+          setSignedInUser(currentUser); 
+          toast('Avatar updated successfully!', 'ok');
+        } catch (err) {
+          toast('Failed to upload image', 'err');
+        }
+      }
+
+      /* ========================================================
+         POSTS & FEED (YOUTUBE LAYOUT)
       ======================================================== */
 
       async function loadPosts(showSpinner=false) {
-        if (showSpinner) el('grid').innerHTML = '<div class="col-span-full flex justify-center py-16"><div class="spinner"></div></div>';
+        if (showSpinner) el('grid').innerHTML = '<div class="flex justify-center py-16"><div class="spinner"></div></div>';
         try {
           const r = await fetch(`${SB_URL}/rest/v1/${TABLE}?order=created_at.desc`, { headers: { apikey: SB_KEY } });
           if (!r.ok) throw new Error();
@@ -629,35 +690,34 @@
         const type = getFileType(p.file_url);
         const timeStr = timeAgo(p.created_at);
         const thumbId = 'thumb_' + (p.id ?? Math.random().toString(36).slice(2));
-
-        const badgeClass = { media:'bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300', docs:'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300', html:'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300', text:'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300' };
         const badgeLabel = { media:'Image', docs:'Doc', html:'App', text:'Post' };
 
-        let thumbHtml = `<div class="w-full h-full flex items-center justify-center bg-slate-100 dark:bg-slate-700"><i data-lucide="file-text" class="w-8 h-8 text-slate-400"></i></div>`;
+        // YouTube Style Large Thumbnails
+        let thumbHtml = `<div class="w-full h-full flex items-center justify-center bg-slate-100 dark:bg-slate-700"><i data-lucide="file-text" class="w-12 h-12 text-slate-400"></i></div>`;
         if (p.file_url) {
-          if (type === 'media') thumbHtml = `<img src="${p.file_url}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200">`;
-          else if (type === 'html') thumbHtml = `<div id="${thumbId}" data-html-url="${esc(p.file_url)}" class="card-thumb-pending w-full h-full flex items-center justify-center"><div class="spinner" style="width:18px;height:18px;border-width:2px;"></div></div>`;
-          else if (type === 'docs') thumbHtml = `<div class="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-slate-700 dark:to-slate-600"><i data-lucide="file-text" class="w-8 h-8 text-blue-500"></i></div>`;
+          if (type === 'media') thumbHtml = `<img src="${p.file_url}" class="w-full h-full object-cover">`;
+          else if (type === 'html') thumbHtml = `<div id="${thumbId}" data-html-url="${esc(p.file_url)}" class="card-thumb-pending w-full h-full flex items-center justify-center"><div class="spinner" style="width:28px;height:28px;border-width:2.5px;"></div></div>`;
+          else if (type === 'docs') thumbHtml = `<div class="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-slate-700 dark:to-slate-600"><i data-lucide="file-text" class="w-12 h-12 text-blue-500"></i></div>`;
         }
 
-        const avatarHtml = p.author_photo ? `<img src="${esc(p.author_photo)}" class="w-full h-full object-cover">` : `<span class="text-xs font-bold">${author[0].toUpperCase()}</span>`;
+        const avatarHtml = p.author_photo ? `<img src="${esc(p.author_photo)}" class="w-full h-full object-cover">` : `<span class="text-sm font-bold text-white">${author[0].toUpperCase()}</span>`;
         const t = p.file_url ? type : 'text';
 
         return `
-          <div class="card-item bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden hover:shadow-md group cursor-pointer" onclick='openViewer(${JSON.stringify(p)})'>
-            <div class="h-32 overflow-hidden bg-slate-100 dark:bg-slate-700">${thumbHtml}</div>
-            <div class="p-3.5">
-              <div class="flex items-start justify-between gap-2 mb-1">
-                <span class="text-[10px] font-semibold uppercase px-2 py-0.5 rounded-full ${badgeClass[t]||badgeClass.text}">${badgeLabel[t]||'File'}</span>
-                <button class="p-1 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 shrink-0" onclick='event.stopPropagation();openPostMenu(event,${JSON.stringify({id:p.id,author_email:p.author_email})})'>
-                  <i data-lucide="more-vertical" class="w-3.5 h-3.5"></i>
-                </button>
+          <div class="card-item bg-white dark:bg-slate-800 md:rounded-2xl shadow-sm border-y md:border border-slate-200 dark:border-slate-700 overflow-hidden cursor-pointer mb-4 md:mb-0" onclick='openViewer(${JSON.stringify(p)})'>
+            <div class="w-full aspect-video overflow-hidden bg-slate-100 dark:bg-slate-700 relative">
+              ${thumbHtml}
+              <span class="absolute bottom-2 right-2 px-1.5 py-0.5 text-[10px] font-bold uppercase rounded bg-black/75 text-white backdrop-blur-sm shadow-sm">${badgeLabel[t]||'File'}</span>
+            </div>
+            <div class="p-3 md:p-4 flex items-start gap-3">
+              <div class="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center shrink-0 overflow-hidden mt-0.5 shadow-sm">${avatarHtml}</div>
+              <div class="flex-1 min-w-0">
+                <h3 class="font-semibold text-base leading-snug line-clamp-2 text-slate-900 dark:text-slate-100">${esc(p.subject||p.title||'Untitled')}</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 truncate">${esc(author)} • ${timeStr}</p>
               </div>
-              <h3 class="font-semibold text-sm mt-1.5 line-clamp-2">${esc(p.subject||p.title||'Untitled')}</h3>
-              <div class="flex items-center gap-2 mt-2.5">
-                <div class="w-6 h-6 rounded-full bg-indigo-600 flex items-center justify-center text-white shrink-0 overflow-hidden">${avatarHtml}</div>
-                <p class="text-xs text-slate-500 dark:text-slate-400 truncate">${esc(author)} · ${timeStr}</p>
-              </div>
+              <button class="p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 shrink-0 -mr-1" onclick='event.stopPropagation();openPostMenu(event,${JSON.stringify({id:p.id,author_email:p.author_email})})'>
+                <i data-lucide="more-vertical" class="w-4 h-4"></i>
+              </button>
             </div>
           </div>`;
       }
@@ -680,7 +740,7 @@
             iframe.srcdoc = html;
             el.replaceWith(iframe);
           } catch {
-            el.innerHTML = '<i data-lucide="globe" class="w-6 h-6 text-slate-400"></i>';
+            el.innerHTML = '<i data-lucide="globe" class="w-8 h-8 text-slate-400"></i>';
             lucide.createIcons();
           }
         }
@@ -726,12 +786,12 @@
         if (p.file_url) {
           const type = getFileType(p.file_url);
           if (type === 'media') {
-            content.innerHTML = `<img src="${p.file_url}" class="w-full h-auto max-h-[60vh] object-contain mx-auto bg-black">`;
+            content.innerHTML = `<img src="${p.file_url}" class="w-full h-auto max-h-screen object-contain bg-black">`;
           } else if (type === 'html') {
-            content.innerHTML = `<div id="vfw" class="w-full flex items-center justify-center h-[65vh]"><div class="spinner"></div></div>`;
+            content.innerHTML = `<div id="vfw" class="w-full flex items-center justify-center h-[75vh]"><div class="spinner"></div></div>`;
             fetch(p.file_url).then(r => r.text()).then(html => {
               const iframe = document.createElement('iframe');
-              iframe.className = 'viewer-iframe';
+              iframe.className = 'viewer-iframe bg-white';
               iframe.setAttribute('sandbox', 'allow-scripts allow-forms allow-popups');
               iframe.srcdoc = html;
               el('vfw').replaceWith(iframe);
@@ -741,9 +801,8 @@
             lucide.createIcons();
           }
         } else {
-          content.innerHTML = `<div class="p-6 text-sm whitespace-pre-wrap leading-relaxed">${esc(p.subject||'')}</div>`;
+          content.innerHTML = `<div class="p-6 text-sm whitespace-pre-wrap leading-relaxed text-slate-100">${esc(p.subject||'')}</div>`;
         }
-        el('viewerBody').innerHTML = (p.file_url && p.subject) ? `<p class="text-sm text-slate-500">${esc(p.subject)}</p>` : '';
         showOverlay('viewerOverlay');
       }
       function closeViewer() { hideOverlay('viewerOverlay'); el('viewerContent').innerHTML = ''; }
@@ -816,12 +875,21 @@
         el('btnCreate')?.classList.toggle('hidden', onChat);
         el('fab')?.classList.toggle('hidden', onChat);
         
+        const mainHeader = el('mainHeader');
+        const chatView = el('chatView');
+        const feedView = el('feedView');
+
         if (onChat) {
-          el('feedView').classList.add('hidden'); el('chatView').classList.remove('hidden');
+          // Hide top bar exclusively on chat screen for edge-to-edge experience
+          mainHeader?.classList.add('hidden');
+          feedView.classList.add('hidden'); chatView.classList.remove('hidden');
+          
           closeThread(); renderChatUsers();
           if (!currentUser) openFostHubAuth(); else initChat();
         } else {
-          el('chatView').classList.add('hidden'); el('feedView').classList.remove('hidden');
+          // Restore regular navigation
+          mainHeader?.classList.remove('hidden');
+          chatView.classList.add('hidden'); feedView.classList.remove('hidden');
           renderGrid();
         }
       }
@@ -863,7 +931,7 @@
         list.innerHTML = others.map(u => {
           const avatarHtml = u.photo ? `<img src="${esc(u.photo)}" class="w-full h-full object-cover">` : `<span class="font-bold">${u.name[0]}</span>`;
           return `<div class="flex items-center gap-3 px-4 py-3 cursor-pointer border-b border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors" onclick='openDM(${JSON.stringify(u)})'>
-            <div class="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center text-white shrink-0 overflow-hidden">${avatarHtml}</div>
+            <div class="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center text-white shrink-0 overflow-hidden shadow-sm">${avatarHtml}</div>
             <div class="flex-1 truncate"><p class="font-semibold text-sm truncate">${esc(u.name)}</p></div>
           </div>`;
         }).join('');
@@ -911,7 +979,6 @@
       async function registerPresence() {
         if (!chatUserId || !currentUser) return;
         try {
-          // Sync with chat_users for chat visibility
           await fetch(`${SB_URL}/rest/v1/chat_users`, {
             method:'POST', headers:{apikey:SB_KEY,'Content-Type':'application/json'},
             body: JSON.stringify({uid:chatUserId, name:currentUser.display_name, email:currentUser.email, photo:currentUser.avatar_url, last_active:new Date().toISOString()})
@@ -932,7 +999,7 @@
             const isMe = m.uid === chatUserId;
             return `<div class="flex ${isMe?'justify-end':'justify-start'} mb-2">
               <div class="max-w-xs px-3.5 py-2 text-sm rounded-2xl ${isMe?'bg-indigo-600 text-white rounded-tr-none':'bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-slate-100 rounded-tl-none'} shadow-sm">
-                <p class="text-xs font-semibold opacity-60 mb-0.5">${esc(m.name)}</p>
+                <p class="text-[10px] font-semibold opacity-75 mb-0.5">${esc(m.name)}</p>
                 <p class="leading-relaxed break-words">${esc(m.text)}</p>
               </div>
             </div>`;
