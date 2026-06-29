@@ -834,6 +834,8 @@ const GOOGLE_CLIENT_ID = '680651504799-pc0krkiavrudqc5mjlbi0g44g6ntirkp.apps.goo
 const BUCKET = 'homework-files';
 const TABLE = 'homework';
 const THEME_KEY = 'posthub_theme';
+// Admin email — can delete any post
+const ADMIN_EMAIL = 'mohammadmominwani123@gmail.com';
 
 let allPosts = [];
 let activeFilter = 'all';
@@ -1121,30 +1123,77 @@ async function hydrateHtmlThumbs() {
 }
 
 // ── KEBAB MENU ──────────────────────
+function isAdmin() {
+  return googleUser && googleUser.email === ADMIN_EMAIL;
+}
+
+function canDelete(post) {
+  if (!googleUser) return false;
+  if (isAdmin()) return true;
+  // Owner match — also allow if post has no author_email (legacy posts) and user is admin
+  return post.author_email && googleUser.email === post.author_email;
+}
+
 function openPostMenu(e, post) {
   const menu = document.getElementById('postMenu');
-  const isOwner = googleUser && post.author_email && googleUser.email === post.author_email;
+  const showDelete = canDelete(post);
+  const adminTag = isAdmin() && post.author_email !== googleUser.email ? ' (admin)' : '';
+
   menu.innerHTML = `
-    ${isOwner ? `<div class="post-menu-item danger" onclick="deletePost('${post.id}')"><span>🗑️</span> Delete post</div>` : ''}
-    <div class="post-menu-item" onclick="closePostMenu();toast('Thanks for your report','ok')"><span>🚩</span> Report</div>`;
+    ${showDelete ? `
+      <div class="post-menu-item danger" onclick="deletePost('${post.id}')">
+        <span>🗑️</span> Delete${adminTag}
+      </div>` : ''}
+    <div class="post-menu-item" onclick="closePostMenu();toast('Thanks for your report','ok')">
+      <span>🚩</span> Report
+    </div>`;
+
   const rect = e.currentTarget.getBoundingClientRect();
-  const mw = 180;
+  const mw = 190;
   let left = rect.right - mw;
   if (left < 8) left = 8;
   let top = rect.bottom + 4;
-  if (top + 100 > window.innerHeight) top = rect.top - 90;
-  menu.style.left = left + 'px'; menu.style.top = top + 'px';
+  if (top + 110 > window.innerHeight) top = rect.top - 100;
+  menu.style.left = left + 'px';
+  menu.style.top  = top  + 'px';
   menu.classList.add('open');
 }
+
 function closePostMenu() { document.getElementById('postMenu').classList.remove('open'); }
+
 async function deletePost(id) {
   closePostMenu();
+
+  // Optimistic UI — remove instantly
+  const backup = [...allPosts];
+  allPosts = allPosts.filter(p => String(p.id) !== String(id));
+  renderGrid();
+
   try {
-    const r = await fetch(`${SB_URL}/rest/v1/${TABLE}?id=eq.${id}`, { method:'DELETE', headers:{ apikey:SB_KEY, Prefer:'return=minimal' }});
-    if (!r.ok) throw new Error();
-    allPosts = allPosts.filter(p => String(p.id) !== String(id));
-    renderGrid(); toast('Post deleted', 'ok');
-  } catch { toast('Failed to delete', 'err'); }
+    // Must send apikey + Authorization Bearer for RLS to pass with anon key
+    const r = await fetch(`${SB_URL}/rest/v1/${TABLE}?id=eq.${id}`, {
+      method: 'DELETE',
+      headers: {
+        apikey: SB_KEY,
+        Authorization: `Bearer ${SB_KEY}`,
+        Prefer: 'return=minimal'
+      }
+    });
+
+    if (!r.ok) {
+      const errText = await r.text().catch(() => r.statusText);
+      console.error('Delete failed:', r.status, errText);
+      throw new Error(`Delete failed (${r.status})`);
+    }
+
+    toast('Post deleted', 'ok');
+  } catch (err) {
+    // Roll back optimistic removal
+    allPosts = backup;
+    renderGrid();
+    console.error(err);
+    toast('Delete failed — check Supabase RLS policy', 'err');
+  }
 }
 
 // ── VIEWER ──────────────────────────
