@@ -4,28 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>FostHub</title>
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
     <script>
-      // Force useragent override for native WebView compatibility before auth loads
-      if (navigator.userAgent.includes("wv") || navigator.userAgent.includes("CrossWalk")) {
-        const desktopUA = "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36";
-        Object.defineProperty(navigator, 'userAgent', { get: () => desktopUA });
-      }
-
-      window.onGoogleLibraryLoad = function() {
-        if (!window.google?.accounts?.id) return;
-        google.accounts.id.initialize({
-          client_id: '680651504799-pc0krkiavrudqc5mjlbi0g44g6ntirkp.apps.googleusercontent.com',
-          callback: handleGoogleSignIn,
-          auto_select: false,
-          cancel_on_tap_outside: false
-        });
-        google.accounts.id.prompt();
-      };
-
       tailwind.config = {
         darkMode: 'class',
         theme: { extend: { fontFamily: { sans: ['Inter','sans-serif'] } } }
@@ -39,7 +21,11 @@
       .scrollbar-thin::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
       .no-scrollbar::-webkit-scrollbar { display: none; }
       .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-      .modal-bg { background: rgba(2,6,23,0.7); backdrop-filter: blur(6px); }
+      
+      /* Glassmorphism & Deep Space Base */
+      .modal-bg { background: rgba(2,6,23,0.7); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+      .glass-panel { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 0 40px rgba(79, 70, 229, 0.15); }
+      
       .thumb-iframe { width: 100%; height: 100%; border: none; pointer-events: none; display: block; }
       .viewer-iframe { width: 100%; height: 75vh; border: none; display: block; }
       #postMenu { position: fixed; z-index: 9999; display: none; min-width: 170px; }
@@ -64,6 +50,9 @@
       #fab:active { transform: scale(.88); }
       .theme-active { background: white; box-shadow: 0 1px 3px rgba(0,0,0,.1); border-radius: 6px; }
       .dark .theme-active { background: #334155; }
+      
+      /* Input Group styling for Domain */
+      .domain-suffix-group:focus-within { border-color: #6366f1; ring: 2px solid rgba(99,102,241,0.5); }
     </style>
   </head>
   <body class="bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 transition-colors duration-150 overflow-hidden">
@@ -71,7 +60,7 @@
     <div class="flex h-screen overflow-hidden">
       <aside class="hidden md:flex flex-col w-64 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 shrink-0">
         <div class="flex items-center gap-2.5 h-16 px-4 border-b border-slate-200 dark:border-slate-700">
-          <div class="p-1.5 bg-indigo-600 rounded-lg">
+          <div class="p-1.5 bg-indigo-600 rounded-lg shadow-[0_0_15px_rgba(79,70,229,0.4)]">
             <i data-lucide="cloud" class="w-5 h-5 text-white"></i>
           </div>
           <span class="text-xl font-bold tracking-tight">FostHub</span>
@@ -162,11 +151,6 @@
                   <p class="text-xs text-slate-500" id="mobileUserEmail"></p>
                 </div>
                 <div class="p-2 space-y-0.5">
-                  <div class="flex gap-1 p-1">
-                    <button onclick="setThemeFn(event,'light')" class="flex-1 py-1.5 text-xs rounded bg-slate-100 dark:bg-slate-700">☀️ Lt</button>
-                    <button onclick="setThemeFn(event,'dark')" class="flex-1 py-1.5 text-xs rounded bg-slate-100 dark:bg-slate-700">🌙 Dk</button>
-                    <button onclick="setThemeFn(event,'system')" class="flex-1 py-1.5 text-xs rounded bg-slate-100 dark:bg-slate-700">🖥️ Sys</button>
-                  </div>
                   <button onclick="logOut(event)" class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-slate-700 text-sm">
                     <i data-lucide="log-out" class="w-4 h-4"></i>Sign out
                   </button>
@@ -302,22 +286,48 @@
       </div>
     </div>
 
-    <div id="googleSignInOverlay" class="fixed inset-0 z-50 hidden items-center justify-center p-4 modal-bg" onclick="overlayClickClose(event,'googleSignInOverlay')">
-      <div class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden anim-modal">
-        <div class="p-8 text-center">
-          <div class="text-5xl mb-4">👋</div>
-          <h3 class="text-xl font-bold mb-2">Welcome to FostHub</h3>
-          <p class="text-sm text-slate-500 dark:text-slate-400 mb-7 leading-relaxed">Sign in with Google securely to publish posts and connect with others.</p>
-          <button id="googleSignInBtn" onclick="triggerGoogleSignIn()" class="w-full flex items-center justify-center gap-3 px-4 py-3 bg-white border border-slate-300 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-all shadow-sm mb-3">
-            <svg width="18" height="18" viewBox="0 0 48 48">
-              <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path>
-              <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path>
-              <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"></path>
-              <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path>
-            </svg>
-            <span id="gbtnText">Continue with Google</span>
-          </button>
-          <button onclick="closeGoogleSignIn()" class="w-full py-2 text-sm text-slate-500 hover:text-slate-700 transition-colors">Maybe later</button>
+    <div id="fosthubAuthOverlay" class="fixed inset-0 z-50 hidden items-center justify-center p-4 modal-bg" onclick="overlayClickClose(event,'fosthubAuthOverlay')">
+      <div class="relative glass-panel rounded-2xl w-full max-w-sm overflow-hidden anim-modal border-t border-indigo-500/30">
+        
+        <div class="absolute -top-24 -right-24 w-48 h-48 bg-indigo-600 rounded-full mix-blend-screen filter blur-[70px] opacity-40 pointer-events-none"></div>
+
+        <div class="p-8 relative z-10 text-slate-100">
+          <div class="flex justify-center mb-6">
+            <div class="p-3 bg-indigo-600/20 rounded-xl border border-indigo-500/30 shadow-[0_0_20px_rgba(79,70,229,0.4)]">
+              <i data-lucide="cloud" class="w-8 h-8 text-indigo-400"></i>
+            </div>
+          </div>
+          
+          <h3 class="text-2xl font-bold text-center mb-2 tracking-tight" id="authTitle">Sign In to FostHub</h3>
+          <p class="text-sm text-slate-400 text-center mb-8" id="authSubtitle">Enter your internal network credentials.</p>
+          
+          <div class="space-y-4">
+            <div>
+              <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Username</label>
+              <div class="domain-suffix-group flex items-center bg-slate-800/60 border border-slate-600 rounded-lg overflow-hidden transition-all">
+                <input id="authUsername" type="text" placeholder="momin" autocomplete="off" class="flex-1 px-3.5 py-2.5 bg-transparent text-sm text-white placeholder-slate-500 outline-none" />
+                <span class="px-3 text-sm text-slate-500 font-medium select-none bg-slate-800/80 h-full py-2.5 border-l border-slate-700">@fosthub.com</span>
+              </div>
+            </div>
+            
+            <div>
+              <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Password</label>
+              <input id="authPassword" type="password" placeholder="••••••••" class="w-full px-3.5 py-2.5 bg-slate-800/60 border border-slate-600 rounded-lg text-sm text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all placeholder-slate-500" />
+            </div>
+
+            <div id="confirmPassDiv" class="hidden">
+              <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Confirm Password</label>
+              <input id="authConfirmPass" type="password" placeholder="••••••••" class="w-full px-3.5 py-2.5 bg-slate-800/60 border border-slate-600 rounded-lg text-sm text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all placeholder-slate-500" />
+            </div>
+
+            <button id="authSubmitBtn" onclick="submitAuth()" class="w-full mt-2 py-3 bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white rounded-lg text-sm font-semibold transition-all shadow-[0_0_15px_rgba(79,70,229,0.3)]">
+              Sign In
+            </button>
+          </div>
+
+          <p class="text-center text-xs text-slate-400 mt-6" id="authToggleText">
+            New here? <span class="text-indigo-400 hover:text-indigo-300 hover:underline cursor-pointer font-medium" onclick="toggleAuthMode()">Create account</span>
+          </p>
         </div>
       </div>
     </div>
@@ -327,12 +337,11 @@
 
       const SB_URL = 'https://nzolsmouyulzqeaocejm.supabase.co';
       const SB_KEY = 'sb_publishable_EGX3jDjRh5LiXjdTw2AXxA_e1YIaP4Q';
-      const GOOGLE_CLIENT_ID = '680651504799-pc0krkiavrudqc5mjlbi0g44g6ntirkp.apps.googleusercontent.com';
       const BUCKET = 'homework-files';
       const TABLE  = 'homework';
       const THEME_KEY   = 'fosthub_theme';
       const SESSION_KEY = 'posthub_session';
-      const ADMIN_EMAIL = 'mohammadmominwani123@gmail.com';
+      const ADMIN_EMAIL = 'mohammadmominwani123@fosthub.com';
 
       let allPosts = [], activeFilter = 'all', searchQuery = '', selectedFile = null;
       let supabase = null, supabaseReadyPromise = null;
@@ -340,7 +349,8 @@
       let chatInitialized = false, chatMessages = [], chatUsers = [];
       let presenceHeartbeat = null, usersChannelSubscribed = false;
       let currentThread = null, dmSupported = true, dmWarned = false;
-      let googleUser = null, chatPollInterval = null, lastMessageId = null;
+      let currentUser = null, chatPollInterval = null, lastMessageId = null;
+      let authMode = 'login';
       const readThreads = new Set();
 
       function saveSession(u)  { try { localStorage.setItem(SESSION_KEY, JSON.stringify(u)); } catch(e){} }
@@ -348,12 +358,7 @@
       function restoreSession() {
         try {
           const s = JSON.parse(localStorage.getItem(SESSION_KEY) || 'null');
-          if (s?.id && s?.name) {
-            googleUser = s;
-            chatUserId = 'usr_' + s.id.substring(0,16);
-            chatUserName = s.name; chatUserEmail = s.email; chatUserPhoto = s.picture;
-            updateUserUI();
-          }
+          if (s && s.id) setSignedInUser(s, true);
         } catch(e){}
       }
 
@@ -361,7 +366,7 @@
         applyStoredTheme();
         restoreSession();
         loadPosts();
-        setInterval(loadPosts, 20000); // Batched request profiling
+        setInterval(loadPosts, 20000); 
         fetchActiveUsers();
         setInterval(fetchActiveUsers, 30000);
         loadSupabaseSdk().then(() => subscribeToActiveUsers());
@@ -417,12 +422,12 @@
 
       function toggleUserMenu(e) {
         e.stopPropagation();
-        if (!googleUser) { openGoogleSignIn(); return; }
+        if (!currentUser) { openFostHubAuth(); return; }
         document.getElementById('userDropdown').classList.toggle('hidden');
       }
       function toggleUserMenuMobile(e) {
         e.stopPropagation();
-        if (!googleUser) { openGoogleSignIn(); return; }
+        if (!currentUser) { openFostHubAuth(); return; }
         document.getElementById('userDropdownMobile').classList.toggle('hidden');
       }
       function closeUserDropdown() {
@@ -438,9 +443,9 @@
         e.stopPropagation();
         if (presenceHeartbeat) clearInterval(presenceHeartbeat);
         if (chatPollInterval)  clearInterval(chatPollInterval);
-        if (window.google?.accounts?.id) google.accounts.id.disableAutoSelect();
+        
         clearSession();
-        googleUser = chatUserId = chatUserName = chatUserEmail = chatUserPhoto = null;
+        currentUser = chatUserId = chatUserName = chatUserEmail = chatUserPhoto = null;
         chatInitialized = false; chatMessages = []; currentThread = null; lastMessageId = null;
         
         document.getElementById('userAvatarTop').innerHTML = '<span id="userInitial">?</span>';
@@ -452,116 +457,128 @@
         closeUserDropdown();
         document.getElementById('userDropdownMobile')?.classList.add('hidden');
         if (activeFilter === 'people') setFilter('all');
-        toast('Signed out cleanly', 'ok');
+        toast('Terminal disconnected', 'ok');
       }
 
-      function setSignedInUser(profile) {
-        googleUser = profile;
-        chatUserId = 'usr_' + profile.id.substring(0,16);
-        chatUserName = profile.name; chatUserEmail = profile.email; chatUserPhoto = profile.picture;
-        saveSession(googleUser);
-        updateUserUI();
-        closeGoogleSignIn();
-        toast('Welcome, ' + profile.name.split(' ')[0], 'ok');
-        if (activeFilter === 'people') initChat();
-      }
+      /* ========================================================
+         FOSTHUB CUSTOM AUTHENTICATION SYSTEM 
+      ======================================================== */
       
-      function handleGoogleSignIn(response) {
-        try {
-          const d = jwt_decode(response.credential);
-          setSignedInUser({ email:d.email, name:d.name, picture:d.picture, id:d.sub });
-        } catch(err) {
-          startOAuthPopupFallback();
-        }
+      function openFostHubAuth() { showOverlay('fosthubAuthOverlay'); }
+      function closeFostHubAuth() { hideOverlay('fosthubAuthOverlay'); }
+
+      function toggleAuthMode() {
+        authMode = authMode === 'login' ? 'register' : 'login';
+        el('authTitle').textContent = authMode === 'login' ? 'Sign In to FostHub' : 'Create FostHub Account';
+        el('authSubtitle').textContent = authMode === 'login' ? 'Enter your internal network credentials.' : 'Establish your permanent domain identity.';
+        el('confirmPassDiv').classList.toggle('hidden', authMode === 'login');
+        el('authSubmitBtn').textContent = authMode === 'login' ? 'Sign In' : 'Create Account';
+        el('authToggleText').innerHTML = authMode === 'login' 
+          ? 'New here? <span class="text-indigo-400 hover:text-indigo-300 hover:underline cursor-pointer font-medium" onclick="toggleAuthMode()">Create account</span>' 
+          : 'Already have an account? <span class="text-indigo-400 hover:text-indigo-300 hover:underline cursor-pointer font-medium" onclick="toggleAuthMode()">Sign in</span>';
       }
 
-      function triggerGoogleSignIn() {
-        const textLabel = el('gbtnText');
-        if (textLabel) textLabel.textContent = 'Connecting Securely…';
-        
-        // Native framework WebView context detection -> Bypass directly to OAuth Popup interface
-        if (navigator.userAgent.includes("wv") || !window.google?.accounts?.id) {
-          startOAuthPopupFallback();
-          return;
+      // WebView safe offline hashing algorithm (Ensures cross-platform capability)
+      function generateHash(str) {
+        let hash = 5381;
+        for (let i = 0; i < str.length; i++) {
+          hash = ((hash << 5) + hash) + str.charCodeAt(i); 
         }
+        return "fHx_" + Math.abs(hash).toString(16) + btoa(str).slice(0, 12);
+      }
 
-        google.accounts.id.prompt(n => {
-          if (n.isNotDisplayed() || n.isSkippedMoment()) {
-            startOAuthPopupFallback();
+      async function submitAuth() {
+        const rawUser = el('authUsername').value.trim().toLowerCase();
+        const pass = el('authPassword').value;
+        if (!rawUser || !pass) { toast('Fields cannot be empty', 'err'); return; }
+        
+        // Sanitize - remove spaces and trailing tags if user types them
+        const cleanUser = rawUser.replace(/@fosthub\.com$/, '').replace(/[^a-z0-9_.]/g, '');
+        if (cleanUser.length < 3) { toast('Username minimum 3 characters', 'err'); return; }
+        
+        const emailStr = `${cleanUser}@fosthub.com`;
+        const passHash = generateHash(pass);
+        const btn = el('authSubmitBtn');
+        
+        btn.disabled = true; btn.textContent = 'Processing...';
+
+        try {
+          if (authMode === 'register') {
+            const pass2 = el('authConfirmPass').value;
+            if (pass !== pass2) { toast('Passwords mismatch', 'err'); throw new Error('mismatch'); }
+            
+            // Check uniqueness
+            const check = await fetch(`${SB_URL}/rest/v1/fosthub_users?username=eq.${cleanUser}`, { headers: { apikey: SB_KEY } });
+            const existing = await check.json();
+            if (existing.length > 0) { toast('Username already taken', 'err'); throw new Error('exists'); }
+
+            // Create record
+            const ins = await fetch(`${SB_URL}/rest/v1/fosthub_users`, {
+              method: 'POST',
+              headers: { apikey: SB_KEY, 'Content-Type': 'application/json', Prefer: 'return=representation' },
+              body: JSON.stringify({ 
+                username: cleanUser, email: emailStr, password_hash: passHash, 
+                display_name: cleanUser.charAt(0).toUpperCase() + cleanUser.slice(1), 
+                role: 'Member' 
+              })
+            });
+            if (!ins.ok) throw new Error('Server reject');
+            const newUser = (await ins.json())[0];
+            setSignedInUser(newUser);
+            toast('Account created successfully', 'ok');
+
           } else {
-            resetSignInButton();
+            // Login Query
+            const sel = await fetch(`${SB_URL}/rest/v1/fosthub_users?username=eq.${cleanUser}&password_hash=eq.${passHash}`, { headers: { apikey: SB_KEY } });
+            const users = await sel.json();
+            if (!users || users.length === 0) { toast('Invalid credentials', 'err'); throw new Error('invalid'); }
+            setSignedInUser(users[0]);
+            toast(`Welcome back, ${users[0].display_name}`, 'ok');
           }
-        });
-      }
-
-      function startOAuthPopupFallback() {
-        const targetUri = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${GOOGLE_CLIENT_ID}&redirect_uri=https://fosthub.netlify.app/&response_type=token&scope=openid%20profile%20email`;
-        
-        // Handle native context redirection fallback cleanly
-        if (window.innerWidth < 768) {
-          window.location.href = targetUri;
-          return;
-        }
-        
-        const authWindow = window.open(targetUri, 'GoogleAuth', 'width=500,height=600,left=100,top=100');
-        const pollTimer = setInterval(() => {
-          try {
-            if (!authWindow || authWindow.closed) {
-              clearInterval(pollTimer);
-              resetSignInButton();
-              return;
-            }
-            if (authWindow.location.href.includes("access_token=")) {
-              const params = new URLSearchParams(authWindow.location.href.split("#")[1]);
-              const token = params.get("access_token");
-              clearInterval(pollTimer);
-              authWindow.close();
-              fetchUserProfileViaToken(token);
-            }
-          } catch(e) {} // Cross-origin containment catch blocks
-        }, 400);
-      }
-
-      // Check URL parameters directly for returning OAuth redirects instantly
-      if (window.location.hash.includes("access_token=")) {
-        const p = new URLSearchParams(window.location.hash.substring(1));
-        if (p.get("access_token")) fetchUserProfileViaToken(p.get("access_token"));
-      }
-
-      async function fetchUserProfileViaToken(token) {
-        try {
-          const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', { headers: { Authorization: `Bearer ${token}` } });
-          const p = await res.json();
-          setSignedInUser({ email:p.email, name:p.name, picture:p.picture, id:p.sub });
-        } catch {
-          toast('Sign-in synchronization aborted', 'err');
+        } catch (e) {
+          console.log(e);
         } finally {
-          resetSignInButton();
+          btn.disabled = false; btn.textContent = authMode === 'login' ? 'Sign In' : 'Create Account';
         }
       }
 
-      function resetSignInButton() {
-        const textLabel = el('gbtnText');
-        if (textLabel) textLabel.textContent = 'Continue with Google';
-      }
-
-      function jwt_decode(token) {
-        const b = token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/');
-        return JSON.parse(decodeURIComponent(atob(b).split('').map(c=>'%'+('00'+c.charCodeAt(0).toString(16)).slice(-2)).join('')));
+      function setSignedInUser(profile, isRestore = false) {
+        currentUser = profile;
+        chatUserId = profile.id || ('usr_' + profile.username);
+        chatUserName = profile.display_name; 
+        chatUserEmail = profile.email; 
+        chatUserPhoto = profile.avatar_url;
+        
+        if (!isRestore) saveSession(currentUser);
+        updateUserUI();
+        closeFostHubAuth();
+        if (activeFilter === 'people') initChat();
+        
+        // Auto-update last active on sign-in
+        fetch(`${SB_URL}/rest/v1/fosthub_users?id=eq.${profile.id}`, {
+            method:'PATCH', headers:{apikey:SB_KEY,'Content-Type':'application/json'},
+            body: JSON.stringify({last_active:new Date().toISOString()})
+        }).catch(()=>{});
       }
 
       function updateUserUI() {
-        if (!googleUser) return;
-        const name = googleUser.name, initial = name.charAt(0).toUpperCase();
-        const isAdmin = googleUser.email === ADMIN_EMAIL;
-        el('userNameTop').textContent = name.split(' ')[0];
-        el('userRoleLabel').textContent = isAdmin ? '⚡ Admin' : 'Member';
-        el('mobileUserName').textContent = name;
-        el('mobileUserEmail').textContent = googleUser.email;
-        const imgHtml = googleUser.picture ? `<img src="${googleUser.picture}" class="w-full h-full object-cover">` : `<span>${initial}</span>`;
+        if (!currentUser) return;
+        const initial = currentUser.display_name.charAt(0).toUpperCase();
+        const isAdmin = currentUser.email === ADMIN_EMAIL || currentUser.role === 'Admin';
+        
+        el('userNameTop').textContent = currentUser.display_name;
+        el('userRoleLabel').textContent = isAdmin ? '⚡ Admin' : currentUser.role;
+        el('mobileUserName').textContent = currentUser.display_name;
+        el('mobileUserEmail').textContent = currentUser.email;
+        
+        const imgHtml = currentUser.avatar_url ? `<img src="${currentUser.avatar_url}" class="w-full h-full object-cover">` : `<span>${initial}</span>`;
         document.getElementById('userAvatarTop').innerHTML = imgHtml;
         document.getElementById('userAvatarMobile').innerHTML = imgHtml;
       }
+
+      /* ========================================================
+         POSTS & FEED
+      ======================================================== */
 
       async function loadPosts(showSpinner=false) {
         if (showSpinner) el('grid').innerHTML = '<div class="col-span-full flex justify-center py-16"><div class="spinner"></div></div>';
@@ -671,10 +688,10 @@
 
       function openPostMenu(e, post) {
         const menu = el('postMenu');
-        const showDel = googleUser && (googleUser.email === ADMIN_EMAIL || (post.author_email && googleUser.email === post.author_email));
+        const showDel = currentUser && (currentUser.email === ADMIN_EMAIL || currentUser.role === 'Admin' || (post.author_email && currentUser.email === post.author_email));
         menu.innerHTML = `
           ${showDel ? `<button class="flex items-center gap-2.5 w-full px-4 py-3 text-sm font-medium text-red-500 hover:bg-red-50 dark:hover:bg-slate-700" onclick="deletePost('${post.id}')"><i data-lucide="trash-2" class="w-4 h-4"></i> Delete</button>` : ''}
-          <button class="flex items-center gap-2.5 w-full px-4 py-3 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100" onclick="closePostMenu();toast('Report compiled','ok')"><i data-lucide="flag" class="w-4 h-4"></i> Report</button>`;
+          <button class="flex items-center gap-2.5 w-full px-4 py-3 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700" onclick="closePostMenu();toast('Report compiled','ok')"><i data-lucide="flag" class="w-4 h-4"></i> Report</button>`;
         
         const rect = e.currentTarget.getBoundingClientRect();
         menu.style.cssText = `left:${Math.min(rect.right - 180, window.innerWidth - 190)}px; top:${rect.bottom + window.scrollY}px;`;
@@ -731,7 +748,7 @@
       }
       function closeViewer() { hideOverlay('viewerOverlay'); el('viewerContent').innerHTML = ''; }
 
-      function openUpload()  { if (!googleUser) { openGoogleSignIn(); return; } showOverlay('uploadOverlay'); }
+      function openUpload()  { if (!currentUser) { openFostHubAuth(); return; } showOverlay('uploadOverlay'); }
       function closeUpload() { hideOverlay('uploadOverlay'); resetUploadForm(); }
       function resetUploadForm() {
         el('inputTitle').value = ''; el('inputDesc').value = ''; el('fileInput').value = ''; selectedFile = null;
@@ -775,7 +792,14 @@
           await fetch(`${SB_URL}/rest/v1/${TABLE}`, {
             method: 'POST',
             headers: { apikey:SB_KEY, 'Content-Type':'application/json' },
-            body: JSON.stringify({ title: title||selectedFile?.name||'System Post', subject:desc||title, file_url:fileUrl, author_name:googleUser.name, author_email:googleUser.email, author_photo:googleUser.picture })
+            body: JSON.stringify({ 
+              title: title||selectedFile?.name||'System Post', 
+              subject:desc||title, 
+              file_url:fileUrl, 
+              author_name:currentUser.display_name, 
+              author_email:currentUser.email, 
+              author_photo:currentUser.avatar_url 
+            })
           });
           toast('Dispatched successfully', 'ok');
           closeUpload(); loadPosts();
@@ -795,7 +819,7 @@
         if (onChat) {
           el('feedView').classList.add('hidden'); el('chatView').classList.remove('hidden');
           closeThread(); renderChatUsers();
-          if (!googleUser) openGoogleSignIn(); else initChat();
+          if (!currentUser) openFostHubAuth(); else initChat();
         } else {
           el('chatView').classList.add('hidden'); el('feedView').classList.remove('hidden');
           renderGrid();
@@ -816,6 +840,10 @@
       }
       function handleSearch() { searchQuery = el('searchInput').value.trim(); renderGrid(); }
 
+      /* ========================================================
+         CHAT & PRESENCE 
+      ======================================================== */
+
       async function fetchActiveUsers() {
         try {
           const r = await fetch(`${SB_URL}/rest/v1/chat_users?order=last_active.desc`, { headers:{ apikey:SB_KEY } });
@@ -830,11 +858,11 @@
 
       function renderChatUsers() {
         const list = el('peopleList'); if (!list) return;
-        const others = chatUsers.filter(u=>u.uid!==chatUserId);
+        const others = chatUsers.filter(u => u.uid !== chatUserId);
         if (!others.length) { list.innerHTML='<div class="p-6 text-center text-xs text-slate-400">Empty workspace channel.</div>'; return; }
         list.innerHTML = others.map(u => {
-          const avatarHtml = u.photo ? `<img src="${esc(u.photo)}" class="w-full h-full object-cover">` : `<span>${u.name[0]}</span>`;
-          return `<div class="flex items-center gap-3 px-4 py-3 cursor-pointer border-b border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-700" onclick='openDM(${JSON.stringify(u)})'>
+          const avatarHtml = u.photo ? `<img src="${esc(u.photo)}" class="w-full h-full object-cover">` : `<span class="font-bold">${u.name[0]}</span>`;
+          return `<div class="flex items-center gap-3 px-4 py-3 cursor-pointer border-b border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors" onclick='openDM(${JSON.stringify(u)})'>
             <div class="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center text-white shrink-0 overflow-hidden">${avatarHtml}</div>
             <div class="flex-1 truncate"><p class="font-semibold text-sm truncate">${esc(u.name)}</p></div>
           </div>`;
@@ -881,11 +909,12 @@
       }
 
       async function registerPresence() {
-        if (!chatUserId || !googleUser) return;
+        if (!chatUserId || !currentUser) return;
         try {
+          // Sync with chat_users for chat visibility
           await fetch(`${SB_URL}/rest/v1/chat_users`, {
             method:'POST', headers:{apikey:SB_KEY,'Content-Type':'application/json'},
-            body: JSON.stringify({uid:chatUserId, name:googleUser.name, email:googleUser.email, photo:googleUser.picture, last_active:new Date().toISOString()})
+            body: JSON.stringify({uid:chatUserId, name:currentUser.display_name, email:currentUser.email, photo:currentUser.avatar_url, last_active:new Date().toISOString()})
           });
         } catch {}
       }
@@ -902,7 +931,7 @@
           box.innerHTML = visible.map(m => {
             const isMe = m.uid === chatUserId;
             return `<div class="flex ${isMe?'justify-end':'justify-start'} mb-2">
-              <div class="max-w-xs px-3.5 py-2 text-sm rounded-2xl ${isMe?'bg-indigo-600 text-white rounded-tr-none':'bg-white dark:bg-slate-700 border text-slate-800 dark:text-slate-100 rounded-tl-none'} shadow-sm">
+              <div class="max-w-xs px-3.5 py-2 text-sm rounded-2xl ${isMe?'bg-indigo-600 text-white rounded-tr-none':'bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-slate-100 rounded-tl-none'} shadow-sm">
                 <p class="text-xs font-semibold opacity-60 mb-0.5">${esc(m.name)}</p>
                 <p class="leading-relaxed break-words">${esc(m.text)}</p>
               </div>
@@ -918,7 +947,7 @@
         const text = input.value.trim(); if (!text) return;
         input.value = '';
         
-        const payload = { uid:chatUserId, name:googleUser.name, text, to_uid: currentThread?.uid || null };
+        const payload = { uid:chatUserId, name:currentUser.display_name, text, to_uid: currentThread?.uid || null };
         chatMessages.push({...payload, created_at: new Date().toISOString()});
         renderChatMessages();
 
@@ -931,7 +960,14 @@
 
       function showOverlay(id) { el(id).classList.remove('hidden'); el(id).classList.add('flex'); }
       function hideOverlay(id) { el(id).classList.add('hidden'); el(id).classList.remove('flex'); }
-      function overlayClickClose(e, id) { if (e.target.id === id) id==='viewerOverlay'?closeViewer():id==='uploadOverlay'?closeUpload():closeGoogleSignIn(); }
+      function overlayClickClose(e, id) { 
+        if (e.target.id === id) {
+          if (id === 'viewerOverlay') closeViewer();
+          else if (id === 'uploadOverlay') closeUpload();
+          else if (id === 'fosthubAuthOverlay') closeFostHubAuth();
+        } 
+      }
+      
       function el(id) { return document.getElementById(id); }
       function esc(s) { const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
       function timeAgo(iso) {
