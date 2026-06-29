@@ -22,7 +22,6 @@
       .no-scrollbar::-webkit-scrollbar { display: none; }
       .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
       
-      /* Glassmorphism & Deep Space Base */
       .modal-bg { background: rgba(2,6,23,0.7); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
       .glass-panel { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 0 40px rgba(79, 70, 229, 0.15); }
       
@@ -52,12 +51,14 @@
       .dark .theme-active { background: #334155; }
       
       .domain-suffix-group:focus-within { border-color: #6366f1; ring: 2px solid rgba(99,102,241,0.5); }
+
+      /* Nav SVG transition smooth filling */
+      .nav-item svg, .bnav-item svg { transition: fill 0.2s ease, color 0.2s ease; }
     </style>
   </head>
   <body class="bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 transition-colors duration-150 overflow-hidden">
     
     <div class="flex h-screen overflow-hidden">
-      <!-- SIDEBAR (Desktop) -->
       <aside class="hidden md:flex flex-col w-64 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 shrink-0">
         <div class="flex items-center gap-2.5 h-12 px-4 border-b border-slate-200 dark:border-slate-700">
           <div class="p-1.5 bg-indigo-600 rounded-lg shadow-[0_0_15px_rgba(79,70,229,0.4)]">
@@ -125,10 +126,8 @@
         </div>
       </aside>
 
-      <!-- MAIN CONTENT -->
       <main class="flex-1 flex flex-col overflow-hidden min-w-0 relative">
         
-        <!-- THIN HEADER -->
         <header id="mainHeader" class="flex items-center justify-between h-12 px-4 md:px-6 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 shrink-0 z-30 transition-all">
           <div class="flex items-center gap-3">
             <div class="flex items-center gap-2 md:hidden">
@@ -167,15 +166,11 @@
                 </div>
               </div>
             </div>
-            <button id="btnCreate" onclick="openUpload()" class="hidden md:flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition-all shadow-sm">
-              <i data-lucide="plus" class="w-4 h-4"></i>Create
-            </button>
-          </div>
+            </div>
         </header>
 
         <div class="flex-1 overflow-y-auto scrollbar-thin bg-slate-50 dark:bg-slate-900" id="mainScroll">
           
-          <!-- YOUTUBE SIZED FEED VIEW -->
           <div id="feedView" class="pb-24 md:pb-6">
             <div class="px-4 py-4 md:px-6 md:py-6 flex items-center justify-between max-w-3xl mx-auto">
               <h1 class="text-xl font-bold" id="feedTitle">Recent Posts</h1>
@@ -184,22 +179,18 @@
               </button>
             </div>
             
-            <!-- Feed Grid: Max width container for YouTube-style stacked cards -->
             <div class="grid grid-cols-1 max-w-3xl mx-auto md:gap-6" id="grid">
               <div class="flex justify-center py-16"><div class="spinner"></div></div>
             </div>
           </div>
 
-          <!-- CHAT VIEW (Takes full height when mainHeader is hidden) -->
           <div id="chatView" class="hidden h-full">
             <div class="flex h-full">
-              <!-- People List Pane -->
               <div id="chatListPane" class="w-full md:w-80 lg:w-96 shrink-0 flex flex-col border-r border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
                 <div class="px-4 py-3 border-b border-slate-200 dark:border-slate-700 flex items-center"><h2 class="text-base font-bold">Messages</h2></div>
                 <div id="peopleList" class="flex-1 overflow-y-auto scrollbar-thin"></div>
               </div>
               
-              <!-- Active Thread Pane (Desktop) -->
               <div id="chatThreadPane" class="hidden md:flex flex-1 flex-col bg-slate-50 dark:bg-slate-900 min-w-0">
                 <div id="chatPlaceholder" class="flex-1 flex flex-col items-center justify-center text-center p-8">
                   <div class="w-16 h-16 bg-slate-200 dark:bg-slate-700 rounded-full flex items-center justify-center mb-4"><i data-lucide="message-circle" class="w-8 h-8 text-slate-400"></i></div>
@@ -207,7 +198,6 @@
                 </div>
                 
                 <div id="chatThreadView" class="hidden flex-col flex-1 min-h-0">
-                  <!-- Thin Thread Header -->
                   <div class="flex items-center gap-3 px-3 py-2 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shrink-0">
                     <button class="md:hidden p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700" onclick="closeThread()"><i data-lucide="arrow-left" class="w-4 h-4"></i></button>
                     <div id="chatThreadAvatar" class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center font-bold text-white text-xs shrink-0 overflow-hidden shadow-sm"></div>
@@ -225,9 +215,7 @@
                 </div>
               </div>
 
-              <!-- Active Thread Overlay (Mobile) -->
               <div id="chatThreadMobile" class="hidden fixed top-0 bottom-16 left-0 right-0 flex-col bg-slate-50 dark:bg-slate-900 z-40">
-                <!-- Thin Thread Header -->
                 <div class="flex items-center gap-3 px-3 py-2 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shrink-0">
                   <button class="p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700" onclick="closeThread()"><i data-lucide="arrow-left" class="w-4 h-4"></i></button>
                   <div id="chatThreadAvatarMobile" class="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center font-bold text-white text-xs shrink-0 overflow-hidden shadow-sm"></div>
@@ -247,23 +235,32 @@
           </div>
         </div>
 
-        <!-- MOBILE BOTTOM NAV -->
         <nav class="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 z-50 grid grid-cols-5">
-          <button class="bnav-item flex flex-col items-center justify-center gap-1 text-slate-500" data-filter="all" onclick="setFilter('all')"><i data-lucide="home" class="w-5 h-5"></i><span class="text-[10px] font-semibold">Home</span></button>
-          <button class="bnav-item flex flex-col items-center justify-center gap-1 text-slate-500" data-filter="media" onclick="setFilter('media')"><i data-lucide="image" class="w-5 h-5"></i><span class="text-[10px] font-semibold">Media</span></button>
-          <button id="fab" onclick="openUpload()" class="flex flex-col items-center justify-center"><div class="w-12 h-12 bg-indigo-600 rounded-full flex items-center justify-center -mt-5 shadow-lg border-4 border-white dark:border-slate-800"><i data-lucide="plus" class="w-5 h-5 text-white"></i></div></button>
-          <button class="bnav-item flex flex-col items-center justify-center gap-1 text-slate-500" data-filter="docs" onclick="setFilter('docs')"><i data-lucide="file-text" class="w-5 h-5"></i><span class="text-[10px] font-semibold">Docs</span></button>
-          <button class="bnav-item flex flex-col items-center justify-center gap-1 text-slate-500" data-filter="people" onclick="setFilter('people')"><i data-lucide="message-square" class="w-5 h-5"></i><span class="text-[10px] font-semibold">Chat</span></button>
+          <button class="bnav-item flex flex-col items-center justify-center gap-1 text-slate-500" data-filter="all" onclick="setFilter('all')">
+            <i data-lucide="home" class="w-5 h-5"></i><span class="text-[10px] font-semibold">Home</span>
+          </button>
+          <button class="bnav-item flex flex-col items-center justify-center gap-1 text-slate-500" data-filter="media" onclick="setFilter('media')">
+            <i data-lucide="image" class="w-5 h-5"></i><span class="text-[10px] font-semibold">Media</span>
+          </button>
+          <button id="fab" onclick="openUpload()" class="flex flex-col items-center justify-center">
+            <div class="w-12 h-12 bg-indigo-600 rounded-full flex items-center justify-center -mt-5 shadow-lg border-4 border-white dark:border-slate-800">
+              <i data-lucide="plus" class="w-5 h-5 text-white"></i>
+            </div>
+          </button>
+          <button class="bnav-item flex flex-col items-center justify-center gap-1 text-slate-500" data-filter="docs" onclick="setFilter('docs')">
+            <i data-lucide="file-text" class="w-5 h-5"></i><span class="text-[10px] font-semibold">Docs</span>
+          </button>
+          <button class="bnav-item flex flex-col items-center justify-center gap-1 text-slate-500" data-filter="people" onclick="setFilter('people')">
+            <i data-lucide="message-square" class="w-5 h-5"></i><span class="text-[10px] font-semibold">Chat</span>
+          </button>
         </nav>
       </main>
     </div>
 
-    <!-- LAYER OVERLAYS & AVATAR UPLOAD -->
     <input type="file" id="avatarInput" accept="image/*" class="hidden" onchange="handleAvatarUpload(event)" />
     <div id="postMenu" class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xl overflow-hidden"></div>
     <div id="toastWrap"></div>
 
-    <!-- VIEWER MODAL -->
     <div id="viewerOverlay" class="fixed inset-0 z-50 hidden items-center justify-center p-0 md:p-3 modal-bg" onclick="overlayClickClose(event,'viewerOverlay')">
       <div class="relative bg-white dark:bg-slate-800 md:rounded-2xl shadow-2xl w-full h-full md:h-auto md:max-w-4xl md:max-h-[90vh] flex flex-col overflow-hidden anim-modal">
         <div class="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-slate-700 shrink-0">
@@ -281,7 +278,6 @@
       </div>
     </div>
 
-    <!-- UPLOAD MODAL -->
     <div id="uploadOverlay" class="fixed inset-0 z-50 hidden items-center justify-center p-4 modal-bg" onclick="overlayClickClose(event,'uploadOverlay')">
       <div class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden anim-modal">
         <div class="flex items-center justify-between px-5 py-4 border-b border-slate-200 dark:border-slate-700">
@@ -317,7 +313,6 @@
       </div>
     </div>
 
-    <!-- FOSTHUB AUTH MODAL -->
     <div id="fosthubAuthOverlay" class="fixed inset-0 z-50 hidden items-center justify-center p-4 modal-bg" onclick="overlayClickClose(event,'fosthubAuthOverlay')">
       <div class="relative glass-panel rounded-2xl w-full max-w-sm overflow-hidden anim-modal border-t border-indigo-500/30">
         <div class="absolute -top-24 -right-24 w-48 h-48 bg-indigo-600 rounded-full mix-blend-screen filter blur-[70px] opacity-40 pointer-events-none"></div>
@@ -362,7 +357,6 @@
       </div>
     </div>
 
-    <!-- CORE SCRIPTS -->
     <script>
       lucide.createIcons();
 
@@ -372,7 +366,7 @@
       const TABLE  = 'homework';
       const THEME_KEY   = 'fosthub_theme';
       const SESSION_KEY = 'posthub_session';
-      const ADMIN_EMAIL = 'momin@fosthub.com'; // Granted new admin rights
+      const ADMIN_EMAIL = 'momin@fosthub.com';
 
       let allPosts = [], activeFilter = 'all', searchQuery = '', selectedFile = null;
       let supabase = null, supabaseReadyPromise = null;
@@ -412,7 +406,9 @@
             }
           });
         });
-        updateNavActive('all');
+        
+        // Ensure nav gets highlighted post-icon rendering
+        setTimeout(() => updateNavActive(activeFilter), 50); 
       });
 
       function loadSupabaseSdk() {
@@ -600,7 +596,7 @@
       }
 
       /* ========================================================
-         PROFILE PICTURE UPLOADER
+         PROFILE PICTURE UPLOADER (WITH PROPAGATION FIX)
       ======================================================== */
       function triggerAvatarUpload() { el('avatarInput').click(); }
       async function handleAvatarUpload(e) {
@@ -623,15 +619,35 @@
           
           const fileUrl = `${SB_URL}/storage/v1/object/public/${BUCKET}/${safeName}`;
           
+          // 1. Update Core Profile
           await fetch(`${SB_URL}/rest/v1/fosthub_users?id=eq.${currentUser.id}`, {
             method: 'PATCH',
             headers: { apikey:SB_KEY, 'Content-Type':'application/json' },
             body: JSON.stringify({ avatar_url: fileUrl })
           });
+
+          // 2. Propagate to legacy posts feed
+          await fetch(`${SB_URL}/rest/v1/${TABLE}?author_email=eq.${currentUser.email}`, {
+            method: 'PATCH',
+            headers: { apikey:SB_KEY, 'Content-Type':'application/json' },
+            body: JSON.stringify({ author_photo: fileUrl })
+          });
+
+          // 3. Propagate to chat directory
+          await fetch(`${SB_URL}/rest/v1/chat_users?uid=eq.${chatUserId}`, {
+            method: 'PATCH',
+            headers: { apikey:SB_KEY, 'Content-Type':'application/json' },
+            body: JSON.stringify({ photo: fileUrl })
+          });
           
           currentUser.avatar_url = fileUrl;
           setSignedInUser(currentUser); 
-          toast('Avatar updated successfully!', 'ok');
+          
+          // Force immediate re-renders 
+          loadPosts(false);
+          fetchActiveUsers();
+
+          toast('Avatar updated everywhere!', 'ok');
         } catch (err) {
           toast('Failed to upload image', 'err');
         }
@@ -692,7 +708,6 @@
         const thumbId = 'thumb_' + (p.id ?? Math.random().toString(36).slice(2));
         const badgeLabel = { media:'Image', docs:'Doc', html:'App', text:'Post' };
 
-        // YouTube Style Large Thumbnails
         let thumbHtml = `<div class="w-full h-full flex items-center justify-center bg-slate-100 dark:bg-slate-700"><i data-lucide="file-text" class="w-12 h-12 text-slate-400"></i></div>`;
         if (p.file_url) {
           if (type === 'media') thumbHtml = `<img src="${p.file_url}" class="w-full h-full object-cover">`;
@@ -870,42 +885,61 @@
       }
 
       function setFilter(f) {
-        activeFilter = f; updateNavActive(f);
-        const onChat = f === 'people';
-        el('btnCreate')?.classList.toggle('hidden', onChat);
-        el('fab')?.classList.toggle('hidden', onChat);
+        activeFilter = f; 
+        updateNavActive(f);
         
         const mainHeader = el('mainHeader');
         const chatView = el('chatView');
         const feedView = el('feedView');
 
-        if (onChat) {
-          // Hide top bar exclusively on chat screen for edge-to-edge experience
+        if (f === 'people') {
           mainHeader?.classList.add('hidden');
           feedView.classList.add('hidden'); chatView.classList.remove('hidden');
           
           closeThread(); renderChatUsers();
           if (!currentUser) openFostHubAuth(); else initChat();
         } else {
-          // Restore regular navigation
           mainHeader?.classList.remove('hidden');
           chatView.classList.add('hidden'); feedView.classList.remove('hidden');
           renderGrid();
         }
       }
 
+      /* ========================================================
+         SVG ACTIVE HIGHLIGHT INJECTOR
+      ======================================================== */
       function updateNavActive(f) {
         document.querySelectorAll('[data-filter]').forEach(el => {
           const active = el.dataset.filter === f;
+          
+          // Class toggles for text/bg based on Sidebar vs Bottom Bar
           if (el.tagName === 'A') {
             el.classList.toggle('bg-indigo-50', active);
             el.classList.toggle('dark:bg-slate-700', active);
             el.classList.toggle('text-indigo-600', active);
+            el.classList.toggle('dark:text-indigo-400', active);
+            el.classList.toggle('text-slate-600', !active);
+            el.classList.toggle('dark:text-slate-400', !active);
           } else {
             el.classList.toggle('text-indigo-600', active);
+            el.classList.toggle('dark:text-indigo-400', active);
+            el.classList.toggle('text-slate-500', !active);
+          }
+
+          // Directly manipulate the DOM SVG to create the Solid 'Filled' highlight effect
+          const svg = el.querySelector('svg');
+          if (svg) {
+            if (active) {
+              svg.setAttribute('fill', 'currentColor');
+              svg.classList.add('fill-current');
+            } else {
+              svg.setAttribute('fill', 'none');
+              svg.classList.remove('fill-current');
+            }
           }
         });
       }
+
       function handleSearch() { searchQuery = el('searchInput').value.trim(); renderGrid(); }
 
       /* ========================================================
