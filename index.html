@@ -22,6 +22,7 @@
       .no-scrollbar::-webkit-scrollbar { display: none; }
       .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
       
+      /* Glassmorphism & Deep Space Base */
       .modal-bg { background: rgba(2,6,23,0.7); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
       .glass-panel { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 0 40px rgba(79, 70, 229, 0.15); }
       
@@ -51,14 +52,18 @@
       .dark .theme-active { background: #334155; }
       
       .domain-suffix-group:focus-within { border-color: #6366f1; ring: 2px solid rgba(99,102,241,0.5); }
-
-      /* Nav SVG transition smooth filling */
       .nav-item svg, .bnav-item svg { transition: fill 0.2s ease, color 0.2s ease; }
+
+      /* Voice Message Player Styling */
+      audio { height: 38px; outline: none; border-radius: 19px; }
+      audio::-webkit-media-controls-panel { background-color: rgba(255, 255, 255, 0.95); }
+      .dark audio::-webkit-media-controls-panel { background-color: rgba(220, 225, 255, 0.9); }
     </style>
   </head>
   <body class="bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 transition-colors duration-150 overflow-hidden">
     
     <div class="flex h-screen overflow-hidden">
+      <!-- SIDEBAR (Desktop) -->
       <aside class="hidden md:flex flex-col w-64 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 shrink-0">
         <div class="flex items-center gap-2.5 h-12 px-4 border-b border-slate-200 dark:border-slate-700">
           <div class="p-1.5 bg-indigo-600 rounded-lg shadow-[0_0_15px_rgba(79,70,229,0.4)]">
@@ -126,8 +131,10 @@
         </div>
       </aside>
 
+      <!-- MAIN CONTENT -->
       <main class="flex-1 flex flex-col overflow-hidden min-w-0 relative">
         
+        <!-- THIN HEADER -->
         <header id="mainHeader" class="flex items-center justify-between h-12 px-4 md:px-6 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 shrink-0 z-30 transition-all">
           <div class="flex items-center gap-3">
             <div class="flex items-center gap-2 md:hidden">
@@ -166,11 +173,12 @@
                 </div>
               </div>
             </div>
-            </div>
+          </div>
         </header>
 
         <div class="flex-1 overflow-y-auto scrollbar-thin bg-slate-50 dark:bg-slate-900" id="mainScroll">
           
+          <!-- YOUTUBE SIZED FEED VIEW -->
           <div id="feedView" class="pb-24 md:pb-6">
             <div class="px-4 py-4 md:px-6 md:py-6 flex items-center justify-between max-w-3xl mx-auto">
               <h1 class="text-xl font-bold" id="feedTitle">Recent Posts</h1>
@@ -184,13 +192,16 @@
             </div>
           </div>
 
+          <!-- CHAT VIEW -->
           <div id="chatView" class="hidden h-full">
             <div class="flex h-full">
+              <!-- People List Pane -->
               <div id="chatListPane" class="w-full md:w-80 lg:w-96 shrink-0 flex flex-col border-r border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
                 <div class="px-4 py-3 border-b border-slate-200 dark:border-slate-700 flex items-center"><h2 class="text-base font-bold">Messages</h2></div>
                 <div id="peopleList" class="flex-1 overflow-y-auto scrollbar-thin"></div>
               </div>
               
+              <!-- Active Thread Pane (Desktop) -->
               <div id="chatThreadPane" class="hidden md:flex flex-1 flex-col bg-slate-50 dark:bg-slate-900 min-w-0">
                 <div id="chatPlaceholder" class="flex-1 flex flex-col items-center justify-center text-center p-8">
                   <div class="w-16 h-16 bg-slate-200 dark:bg-slate-700 rounded-full flex items-center justify-center mb-4"><i data-lucide="message-circle" class="w-8 h-8 text-slate-400"></i></div>
@@ -207,14 +218,28 @@
                   <div id="chatMessages" class="flex-1 overflow-y-auto scrollbar-thin p-4 flex flex-col gap-3 min-h-0"></div>
                   
                   <div class="px-4 py-2.5 border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shrink-0">
-                    <div class="flex items-center gap-2">
+                    <!-- Text Input State -->
+                    <div id="chatInputWrapper" class="flex items-center gap-2 w-full">
                       <input id="chatInput" type="text" placeholder="Type a message…" class="flex-1 px-4 py-2 bg-slate-100 dark:bg-slate-700 rounded-full text-sm outline-none" onkeypress="if(event.key==='Enter') sendChatMessage()" />
+                      <button onclick="startRecording(false)" class="p-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-full text-slate-600 dark:text-slate-300 transition-colors"><i data-lucide="mic" class="w-4 h-4"></i></button>
                       <button id="sendBtn" onclick="sendChatMessage()" class="p-2 bg-indigo-600 hover:bg-indigo-700 rounded-full text-white shadow-sm"><i data-lucide="send" class="w-4 h-4"></i></button>
+                    </div>
+                    <!-- Recording Voice State -->
+                    <div id="chatRecordingWrapper" class="hidden items-center justify-between w-full bg-red-50 dark:bg-red-900/20 rounded-full px-4 py-1.5 border border-red-200 dark:border-red-800/50">
+                      <div class="flex items-center gap-3">
+                        <div class="w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.6)]"></div>
+                        <span class="text-sm font-semibold text-red-500 dark:text-red-400" id="recordTimer">0:00</span>
+                      </div>
+                      <div class="flex items-center gap-1">
+                        <button onclick="stopRecording(true, false)" class="p-1.5 text-slate-400 hover:text-red-500 hover:bg-white dark:hover:bg-slate-800 rounded-full transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                        <button onclick="stopRecording(false, false)" class="p-1.5 text-white bg-indigo-600 hover:bg-indigo-700 rounded-full shadow-sm ml-1"><i data-lucide="send" class="w-4 h-4"></i></button>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
 
+              <!-- Active Thread Overlay (Mobile) -->
               <div id="chatThreadMobile" class="hidden fixed top-0 bottom-16 left-0 right-0 flex-col bg-slate-50 dark:bg-slate-900 z-40">
                 <div class="flex items-center gap-3 px-3 py-2 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shrink-0">
                   <button class="p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700" onclick="closeThread()"><i data-lucide="arrow-left" class="w-4 h-4"></i></button>
@@ -225,9 +250,22 @@
                 <div id="chatMessagesMobile" class="flex-1 overflow-y-auto scrollbar-thin p-4 flex flex-col gap-3 min-h-0"></div>
                 
                 <div class="px-4 py-2.5 border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shrink-0">
-                  <div class="flex items-center gap-2">
+                  <!-- Text Input State -->
+                  <div id="chatInputWrapperMobile" class="flex items-center gap-2 w-full">
                     <input id="chatInputMobile" type="text" placeholder="Type a message…" class="flex-1 px-4 py-2 bg-slate-100 dark:bg-slate-700 rounded-full text-sm outline-none" onkeypress="if(event.key==='Enter') sendChatMessage()" />
+                    <button onclick="startRecording(true)" class="p-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-full text-slate-600 dark:text-slate-300 transition-colors"><i data-lucide="mic" class="w-4 h-4"></i></button>
                     <button onclick="sendChatMessage()" class="p-2 bg-indigo-600 hover:bg-indigo-700 rounded-full text-white shadow-sm"><i data-lucide="send" class="w-4 h-4"></i></button>
+                  </div>
+                  <!-- Recording Voice State -->
+                  <div id="chatRecordingWrapperMobile" class="hidden items-center justify-between w-full bg-red-50 dark:bg-red-900/20 rounded-full px-4 py-1.5 border border-red-200 dark:border-red-800/50">
+                    <div class="flex items-center gap-3">
+                      <div class="w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.6)]"></div>
+                      <span class="text-sm font-semibold text-red-500 dark:text-red-400" id="recordTimerMobile">0:00</span>
+                    </div>
+                    <div class="flex items-center gap-1">
+                      <button onclick="stopRecording(true, true)" class="p-1.5 text-slate-400 hover:text-red-500 hover:bg-white dark:hover:bg-slate-800 rounded-full transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                      <button onclick="stopRecording(false, true)" class="p-1.5 text-white bg-indigo-600 hover:bg-indigo-700 rounded-full shadow-sm ml-1"><i data-lucide="send" class="w-4 h-4"></i></button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -235,6 +273,7 @@
           </div>
         </div>
 
+        <!-- MOBILE BOTTOM NAV -->
         <nav class="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 z-50 grid grid-cols-5">
           <button class="bnav-item flex flex-col items-center justify-center gap-1 text-slate-500" data-filter="all" onclick="setFilter('all')">
             <i data-lucide="home" class="w-5 h-5"></i><span class="text-[10px] font-semibold">Home</span>
@@ -257,10 +296,12 @@
       </main>
     </div>
 
+    <!-- LAYER OVERLAYS & AVATAR UPLOAD -->
     <input type="file" id="avatarInput" accept="image/*" class="hidden" onchange="handleAvatarUpload(event)" />
     <div id="postMenu" class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xl overflow-hidden"></div>
     <div id="toastWrap"></div>
 
+    <!-- VIEWER MODAL -->
     <div id="viewerOverlay" class="fixed inset-0 z-50 hidden items-center justify-center p-0 md:p-3 modal-bg" onclick="overlayClickClose(event,'viewerOverlay')">
       <div class="relative bg-white dark:bg-slate-800 md:rounded-2xl shadow-2xl w-full h-full md:h-auto md:max-w-4xl md:max-h-[90vh] flex flex-col overflow-hidden anim-modal">
         <div class="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-slate-700 shrink-0">
@@ -278,6 +319,7 @@
       </div>
     </div>
 
+    <!-- UPLOAD MODAL -->
     <div id="uploadOverlay" class="fixed inset-0 z-50 hidden items-center justify-center p-4 modal-bg" onclick="overlayClickClose(event,'uploadOverlay')">
       <div class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden anim-modal">
         <div class="flex items-center justify-between px-5 py-4 border-b border-slate-200 dark:border-slate-700">
@@ -313,6 +355,7 @@
       </div>
     </div>
 
+    <!-- FOSTHUB AUTH MODAL -->
     <div id="fosthubAuthOverlay" class="fixed inset-0 z-50 hidden items-center justify-center p-4 modal-bg" onclick="overlayClickClose(event,'fosthubAuthOverlay')">
       <div class="relative glass-panel rounded-2xl w-full max-w-sm overflow-hidden anim-modal border-t border-indigo-500/30">
         <div class="absolute -top-24 -right-24 w-48 h-48 bg-indigo-600 rounded-full mix-blend-screen filter blur-[70px] opacity-40 pointer-events-none"></div>
@@ -357,6 +400,7 @@
       </div>
     </div>
 
+    <!-- CORE SCRIPTS -->
     <script>
       lucide.createIcons();
 
@@ -407,7 +451,6 @@
           });
         });
         
-        // Ensure nav gets highlighted post-icon rendering
         setTimeout(() => updateNavActive(activeFilter), 50); 
       });
 
@@ -596,7 +639,7 @@
       }
 
       /* ========================================================
-         PROFILE PICTURE UPLOADER (WITH PROPAGATION FIX)
+         PROFILE PICTURE UPLOADER 
       ======================================================== */
       function triggerAvatarUpload() { el('avatarInput').click(); }
       async function handleAvatarUpload(e) {
@@ -619,21 +662,18 @@
           
           const fileUrl = `${SB_URL}/storage/v1/object/public/${BUCKET}/${safeName}`;
           
-          // 1. Update Core Profile
           await fetch(`${SB_URL}/rest/v1/fosthub_users?id=eq.${currentUser.id}`, {
             method: 'PATCH',
             headers: { apikey:SB_KEY, 'Content-Type':'application/json' },
             body: JSON.stringify({ avatar_url: fileUrl })
           });
 
-          // 2. Propagate to legacy posts feed
           await fetch(`${SB_URL}/rest/v1/${TABLE}?author_email=eq.${currentUser.email}`, {
             method: 'PATCH',
             headers: { apikey:SB_KEY, 'Content-Type':'application/json' },
             body: JSON.stringify({ author_photo: fileUrl })
           });
 
-          // 3. Propagate to chat directory
           await fetch(`${SB_URL}/rest/v1/chat_users?uid=eq.${chatUserId}`, {
             method: 'PATCH',
             headers: { apikey:SB_KEY, 'Content-Type':'application/json' },
@@ -642,11 +682,8 @@
           
           currentUser.avatar_url = fileUrl;
           setSignedInUser(currentUser); 
-          
-          // Force immediate re-renders 
           loadPosts(false);
           fetchActiveUsers();
-
           toast('Avatar updated everywhere!', 'ok');
         } catch (err) {
           toast('Failed to upload image', 'err');
@@ -912,7 +949,6 @@
         document.querySelectorAll('[data-filter]').forEach(el => {
           const active = el.dataset.filter === f;
           
-          // Class toggles for text/bg based on Sidebar vs Bottom Bar
           if (el.tagName === 'A') {
             el.classList.toggle('bg-indigo-50', active);
             el.classList.toggle('dark:bg-slate-700', active);
@@ -926,7 +962,6 @@
             el.classList.toggle('text-slate-500', !active);
           }
 
-          // Directly manipulate the DOM SVG to create the Solid 'Filled' highlight effect
           const svg = el.querySelector('svg');
           if (svg) {
             if (active) {
@@ -943,7 +978,7 @@
       function handleSearch() { searchQuery = el('searchInput').value.trim(); renderGrid(); }
 
       /* ========================================================
-         CHAT & PRESENCE 
+         CHAT, PRESENCE & VOICE RECORDING
       ======================================================== */
 
       async function fetchActiveUsers() {
@@ -1031,10 +1066,21 @@
           const box = el(boxId); if (!box) return;
           box.innerHTML = visible.map(m => {
             const isMe = m.uid === chatUserId;
+            
+            // Audio Parsing Logic (Zero Database Schema changes needed)
+            const isAudio = (m.text || '').startsWith('[AUDIO::');
+            let contentHtml = '';
+            if (isAudio) {
+              const url = m.text.replace('[AUDIO::', '').replace(']', '');
+              contentHtml = `<audio controls src="${esc(url)}" class="w-48 sm:w-60 mt-1"></audio>`;
+            } else {
+              contentHtml = `<p class="leading-relaxed break-words">${esc(m.text)}</p>`;
+            }
+
             return `<div class="flex ${isMe?'justify-end':'justify-start'} mb-2">
-              <div class="max-w-xs px-3.5 py-2 text-sm rounded-2xl ${isMe?'bg-indigo-600 text-white rounded-tr-none':'bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-slate-100 rounded-tl-none'} shadow-sm">
+              <div class="max-w-[75%] md:max-w-xs px-3.5 py-2 text-sm rounded-2xl ${isMe?'bg-indigo-600 text-white rounded-tr-none':'bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-800 dark:text-slate-100 rounded-tl-none'} shadow-sm">
                 <p class="text-[10px] font-semibold opacity-75 mb-0.5">${esc(m.name)}</p>
-                <p class="leading-relaxed break-words">${esc(m.text)}</p>
+                ${contentHtml}
               </div>
             </div>`;
           }).join('');
@@ -1058,6 +1104,96 @@
           });
         } catch {}
       }
+
+      /* --- VOICE RECORDING LOGIC --- */
+      let mediaRecorder;
+      let audioChunks = [];
+      let isRecording = false;
+      let cancelRecordingFlag = false;
+      let recTimerInt = null;
+      let recSeconds = 0;
+
+      async function startRecording(isMobile) {
+        if (!currentUser) { openFostHubAuth(); return; }
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          mediaRecorder = new MediaRecorder(stream);
+          audioChunks = [];
+          
+          mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
+          mediaRecorder.onstop = async () => {
+            const audioBlob = new Blob(audioChunks); // Uses browser default audio format
+            stream.getTracks().forEach(t => t.stop()); // Free hardware mic
+            if (audioBlob.size > 0 && !cancelRecordingFlag) {
+              await uploadAndSendAudio(audioBlob);
+            }
+          };
+          
+          mediaRecorder.start();
+          isRecording = true;
+          cancelRecordingFlag = false;
+          toggleRecordingUI(true, isMobile);
+        } catch (err) {
+          toast('Microphone access denied or unavailable', 'err');
+        }
+      }
+
+      function stopRecording(cancel, isMobile) {
+        if (!isRecording) return;
+        cancelRecordingFlag = cancel;
+        mediaRecorder.stop();
+        isRecording = false;
+        toggleRecordingUI(false, isMobile);
+      }
+
+      function toggleRecordingUI(show, isMobile) {
+        const normal = el(isMobile ? 'chatInputWrapperMobile' : 'chatInputWrapper');
+        const rec = el(isMobile ? 'chatRecordingWrapperMobile' : 'chatRecordingWrapper');
+        const timerEl = el(isMobile ? 'recordTimerMobile' : 'recordTimer');
+        
+        if (show) {
+          normal.classList.add('hidden'); normal.classList.remove('flex');
+          rec.classList.remove('hidden'); rec.classList.add('flex');
+          recSeconds = 0; timerEl.textContent = '0:00';
+          recTimerInt = setInterval(() => {
+            recSeconds++;
+            const m = Math.floor(recSeconds / 60);
+            const s = (recSeconds % 60).toString().padStart(2, '0');
+            timerEl.textContent = `${m}:${s}`;
+          }, 1000);
+        } else {
+          normal.classList.remove('hidden'); normal.classList.add('flex');
+          rec.classList.add('hidden'); rec.classList.remove('flex');
+          clearInterval(recTimerInt);
+        }
+      }
+
+      async function uploadAndSendAudio(blob) {
+        toast('Sending voice message...', 'ok');
+        try {
+          const safeName = `voice_${currentUser.username}_${Date.now()}.webm`;
+          const r = await fetch(`${SB_URL}/storage/v1/object/${BUCKET}/${safeName}`, {
+            method: 'POST',
+            headers: { apikey:SB_KEY, Authorization:`Bearer ${SB_KEY}`, 'Content-Type': blob.type || 'audio/webm' },
+            body: blob
+          });
+          if (!r.ok) throw new Error();
+          
+          const url = `${SB_URL}/storage/v1/object/public/${BUCKET}/${safeName}`;
+          
+          // Encode Audio URL as text
+          const payload = { uid:chatUserId, name:currentUser.display_name, text: `[AUDIO::${url}]`, to_uid: currentThread?.uid || null };
+          chatMessages.push({...payload, created_at: new Date().toISOString()});
+          renderChatMessages();
+
+          await fetch(`${SB_URL}/rest/v1/chat_messages`, {
+            method:'POST', headers:{apikey:SB_KEY,'Content-Type':'application/json'}, body:JSON.stringify(payload)
+          });
+        } catch (e) {
+          toast('Failed to send voice message', 'err');
+        }
+      }
+      /* ----------------------------- */
 
       function showOverlay(id) { el(id).classList.remove('hidden'); el(id).classList.add('flex'); }
       function hideOverlay(id) { el(id).classList.add('hidden'); el(id).classList.remove('flex'); }
