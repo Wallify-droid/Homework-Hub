@@ -691,7 +691,7 @@
       }
 
       /* ========================================================
-         POSTS & FEED (YOUTUBE LAYOUT)
+         POSTS & FEED (YOUTUBE LAYOUT & TEXT THUMBNAILS)
       ======================================================== */
 
       async function loadPosts(showSpinner=false) {
@@ -743,17 +743,25 @@
         const type = getFileType(p.file_url);
         const timeStr = timeAgo(p.created_at);
         const thumbId = 'thumb_' + (p.id ?? Math.random().toString(36).slice(2));
-        const badgeLabel = { media:'Image', docs:'Doc', html:'App', text:'Post' };
+        const badgeLabel = { media:'Image', docs:'Doc', html:'App', text:'Text' };
 
-        let thumbHtml = `<div class="w-full h-full flex items-center justify-center bg-slate-100 dark:bg-slate-700"><i data-lucide="file-text" class="w-12 h-12 text-slate-400"></i></div>`;
+        let thumbHtml = '';
         if (p.file_url) {
           if (type === 'media') thumbHtml = `<img src="${p.file_url}" class="w-full h-full object-cover">`;
           else if (type === 'html') thumbHtml = `<div id="${thumbId}" data-html-url="${esc(p.file_url)}" class="card-thumb-pending w-full h-full flex items-center justify-center"><div class="spinner" style="width:28px;height:28px;border-width:2.5px;"></div></div>`;
           else if (type === 'docs') thumbHtml = `<div class="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-slate-700 dark:to-slate-600"><i data-lucide="file-text" class="w-12 h-12 text-blue-500"></i></div>`;
+        } else {
+          // If purely text (no file chosen), show the text as the thumbnail
+          thumbHtml = `<div class="w-full h-full p-4 md:p-6 bg-gradient-to-br from-indigo-50 to-slate-100 dark:from-slate-800 dark:to-slate-700 flex items-center justify-center text-center overflow-hidden">
+            <p class="text-sm md:text-base font-medium text-slate-700 dark:text-slate-300 line-clamp-4 leading-relaxed">${esc(p.subject || p.title || '')}</p>
+          </div>`;
         }
 
         const avatarHtml = p.author_photo ? `<img src="${esc(p.author_photo)}" class="w-full h-full object-cover">` : `<span class="text-sm font-bold text-white">${author[0].toUpperCase()}</span>`;
         const t = p.file_url ? type : 'text';
+
+        // Prepare the post menu payload to include file_url for the download button
+        const menuPayload = JSON.stringify({ id: p.id, author_email: p.author_email, file_url: p.file_url });
 
         return `
           <div class="card-item bg-white dark:bg-slate-800 md:rounded-2xl shadow-sm border-y md:border border-slate-200 dark:border-slate-700 overflow-hidden cursor-pointer mb-4 md:mb-0" onclick='openViewer(${JSON.stringify(p)})'>
@@ -767,7 +775,7 @@
                 <h3 class="font-semibold text-base leading-snug line-clamp-2 text-slate-900 dark:text-slate-100">${esc(p.subject||p.title||'Untitled')}</h3>
                 <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 truncate">${esc(author)} • ${timeStr}</p>
               </div>
-              <button class="p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 shrink-0 -mr-1" onclick='event.stopPropagation();openPostMenu(event,${JSON.stringify({id:p.id,author_email:p.author_email})})'>
+              <button class="p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 shrink-0 -mr-1" onclick='event.stopPropagation();openPostMenu(event, ${menuPayload})'>
                 <i data-lucide="more-vertical" class="w-4 h-4"></i>
               </button>
             </div>
@@ -801,15 +809,28 @@
       function openPostMenu(e, post) {
         const menu = el('postMenu');
         const showDel = currentUser && (currentUser.email === ADMIN_EMAIL || currentUser.role === 'Admin' || (post.author_email && currentUser.email === post.author_email));
-        menu.innerHTML = `
-          ${showDel ? `<button class="flex items-center gap-2.5 w-full px-4 py-3 text-sm font-medium text-red-500 hover:bg-red-50 dark:hover:bg-slate-700" onclick="deletePost('${post.id}')"><i data-lucide="trash-2" class="w-4 h-4"></i> Delete</button>` : ''}
-          <button class="flex items-center gap-2.5 w-full px-4 py-3 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700" onclick="closePostMenu();toast('Report compiled','ok')"><i data-lucide="flag" class="w-4 h-4"></i> Report</button>`;
         
+        let menuHtml = '';
+
+        // Add Download button if post has a file
+        if (post.file_url) {
+          menuHtml += `<a href="${esc(post.file_url)}" target="_blank" download class="flex items-center gap-2.5 w-full px-4 py-3 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"><i data-lucide="download" class="w-4 h-4"></i> Download</a>`;
+        }
+        
+        if (showDel) {
+          menuHtml += `<button class="flex items-center gap-2.5 w-full px-4 py-3 text-sm font-medium text-red-500 hover:bg-red-50 dark:hover:bg-slate-700 transition-colors" onclick="deletePost('${post.id}')"><i data-lucide="trash-2" class="w-4 h-4"></i> Delete</button>`;
+        }
+        
+        menuHtml += `<button class="flex items-center gap-2.5 w-full px-4 py-3 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors" onclick="closePostMenu();toast('Report compiled','ok')"><i data-lucide="flag" class="w-4 h-4"></i> Report</button>`;
+        
+        menu.innerHTML = menuHtml;
+
         const rect = e.currentTarget.getBoundingClientRect();
         menu.style.cssText = `left:${Math.min(rect.right - 180, window.innerWidth - 190)}px; top:${rect.bottom + window.scrollY}px;`;
         menu.classList.add('open');
         lucide.createIcons();
       }
+      
       function closePostMenu() { el('postMenu').classList.remove('open'); }
 
       async function deletePost(id) {
@@ -853,7 +874,7 @@
             lucide.createIcons();
           }
         } else {
-          content.innerHTML = `<div class="p-6 text-sm whitespace-pre-wrap leading-relaxed text-slate-100">${esc(p.subject||'')}</div>`;
+          content.innerHTML = `<div class="p-6 md:p-12 text-base md:text-lg whitespace-pre-wrap leading-relaxed text-slate-100 flex items-center justify-center h-full">${esc(p.subject||'')}</div>`;
         }
         showOverlay('viewerOverlay');
       }
@@ -1067,7 +1088,6 @@
           box.innerHTML = visible.map(m => {
             const isMe = m.uid === chatUserId;
             
-            // Audio Parsing Logic (Zero Database Schema changes needed)
             const isAudio = (m.text || '').startsWith('[AUDIO::');
             let contentHtml = '';
             if (isAudio) {
@@ -1122,8 +1142,8 @@
           
           mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
           mediaRecorder.onstop = async () => {
-            const audioBlob = new Blob(audioChunks); // Uses browser default audio format
-            stream.getTracks().forEach(t => t.stop()); // Free hardware mic
+            const audioBlob = new Blob(audioChunks); 
+            stream.getTracks().forEach(t => t.stop()); 
             if (audioBlob.size > 0 && !cancelRecordingFlag) {
               await uploadAndSendAudio(audioBlob);
             }
@@ -1181,7 +1201,6 @@
           
           const url = `${SB_URL}/storage/v1/object/public/${BUCKET}/${safeName}`;
           
-          // Encode Audio URL as text
           const payload = { uid:chatUserId, name:currentUser.display_name, text: `[AUDIO::${url}]`, to_uid: currentThread?.uid || null };
           chatMessages.push({...payload, created_at: new Date().toISOString()});
           renderChatMessages();
