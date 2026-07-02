@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>FostHub</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <!-- Upgraded to ultra-resilient jsdelivr CDN to prevent icon loading crashes -->
+    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
     <script>
       tailwind.config = {
@@ -63,6 +64,7 @@
   <body class="bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 transition-colors duration-150 overflow-hidden">
     
     <div class="flex h-screen overflow-hidden">
+      <!-- SIDEBAR (Desktop) -->
       <aside class="hidden md:flex flex-col w-64 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 shrink-0">
         <div class="flex items-center gap-2.5 h-12 px-4 border-b border-slate-200 dark:border-slate-700">
           <div class="p-1.5 bg-indigo-600 rounded-lg shadow-[0_0_15px_rgba(79,70,229,0.4)]">
@@ -130,8 +132,10 @@
         </div>
       </aside>
 
+      <!-- MAIN CONTENT -->
       <main class="flex-1 flex flex-col overflow-hidden min-w-0 relative">
         
+        <!-- THIN HEADER -->
         <header id="mainHeader" class="flex items-center justify-between h-12 px-4 md:px-6 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 shrink-0 z-30 transition-all">
           <div class="flex items-center gap-3">
             <div class="flex items-center gap-2 md:hidden">
@@ -175,6 +179,7 @@
 
         <div class="flex-1 overflow-y-auto scrollbar-thin bg-slate-50 dark:bg-slate-900" id="mainScroll">
           
+          <!-- YOUTUBE SIZED FEED VIEW -->
           <div id="feedView" class="pb-24 md:pb-6">
             <div class="px-4 py-4 md:px-6 md:py-6 flex items-center justify-between max-w-3xl mx-auto">
               <h1 class="text-xl font-bold" id="feedTitle">Recent Posts</h1>
@@ -188,13 +193,16 @@
             </div>
           </div>
 
+          <!-- CHAT VIEW -->
           <div id="chatView" class="hidden h-full">
             <div class="flex h-full">
+              <!-- People List Pane -->
               <div id="chatListPane" class="w-full md:w-80 lg:w-96 shrink-0 flex flex-col border-r border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
                 <div class="px-4 py-3 border-b border-slate-200 dark:border-slate-700 flex items-center"><h2 class="text-base font-bold">Messages</h2></div>
                 <div id="peopleList" class="flex-1 overflow-y-auto scrollbar-thin"></div>
               </div>
               
+              <!-- Active Thread Pane (Desktop) -->
               <div id="chatThreadPane" class="hidden md:flex flex-1 flex-col bg-slate-50 dark:bg-slate-900 min-w-0">
                 <div id="chatPlaceholder" class="flex-1 flex flex-col items-center justify-center text-center p-8">
                   <div class="w-16 h-16 bg-slate-200 dark:bg-slate-700 rounded-full flex items-center justify-center mb-4"><i data-lucide="message-circle" class="w-8 h-8 text-slate-400"></i></div>
@@ -211,11 +219,13 @@
                   <div id="chatMessages" class="flex-1 overflow-y-auto scrollbar-thin p-4 flex flex-col gap-3 min-h-0"></div>
                   
                   <div class="px-4 py-2.5 border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shrink-0">
+                    <!-- Text Input State -->
                     <div id="chatInputWrapper" class="flex items-center gap-2 w-full">
                       <input id="chatInput" type="text" placeholder="Type a message…" class="flex-1 px-4 py-2 bg-slate-100 dark:bg-slate-700 rounded-full text-sm outline-none" onkeypress="if(event.key==='Enter') sendChatMessage()" />
                       <button onclick="startRecording(false)" class="p-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-full text-slate-600 dark:text-slate-300 transition-colors"><i data-lucide="mic" class="w-4 h-4"></i></button>
                       <button id="sendBtn" onclick="sendChatMessage()" class="p-2 bg-indigo-600 hover:bg-indigo-700 rounded-full text-white shadow-sm"><i data-lucide="send" class="w-4 h-4"></i></button>
                     </div>
+                    <!-- Recording Voice State -->
                     <div id="chatRecordingWrapper" class="hidden items-center justify-between w-full bg-red-50 dark:bg-red-900/20 rounded-full px-4 py-1.5 border border-red-200 dark:border-red-800/50">
                       <div class="flex items-center gap-3">
                         <div class="w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.6)]"></div>
@@ -230,6 +240,7 @@
                 </div>
               </div>
 
+              <!-- Active Thread Overlay (Mobile) -->
               <div id="chatThreadMobile" class="hidden fixed top-0 bottom-16 left-0 right-0 flex-col bg-slate-50 dark:bg-slate-900 z-40">
                 <div class="flex items-center gap-3 px-3 py-2 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shrink-0">
                   <button class="p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700" onclick="closeThread()"><i data-lucide="arrow-left" class="w-4 h-4"></i></button>
@@ -240,11 +251,13 @@
                 <div id="chatMessagesMobile" class="flex-1 overflow-y-auto scrollbar-thin p-4 flex flex-col gap-3 min-h-0"></div>
                 
                 <div class="px-4 py-2.5 border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shrink-0">
+                  <!-- Text Input State -->
                   <div id="chatInputWrapperMobile" class="flex items-center gap-2 w-full">
                     <input id="chatInputMobile" type="text" placeholder="Type a message…" class="flex-1 px-4 py-2 bg-slate-100 dark:bg-slate-700 rounded-full text-sm outline-none" onkeypress="if(event.key==='Enter') sendChatMessage()" />
                     <button onclick="startRecording(true)" class="p-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-full text-slate-600 dark:text-slate-300 transition-colors"><i data-lucide="mic" class="w-4 h-4"></i></button>
                     <button onclick="sendChatMessage()" class="p-2 bg-indigo-600 hover:bg-indigo-700 rounded-full text-white shadow-sm"><i data-lucide="send" class="w-4 h-4"></i></button>
                   </div>
+                  <!-- Recording Voice State -->
                   <div id="chatRecordingWrapperMobile" class="hidden items-center justify-between w-full bg-red-50 dark:bg-red-900/20 rounded-full px-4 py-1.5 border border-red-200 dark:border-red-800/50">
                     <div class="flex items-center gap-3">
                       <div class="w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.6)]"></div>
@@ -261,6 +274,7 @@
           </div>
         </div>
 
+        <!-- MOBILE BOTTOM NAV -->
         <nav class="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 z-50 grid grid-cols-5">
           <button class="bnav-item flex flex-col items-center justify-center gap-1 text-slate-500" data-filter="all" onclick="setFilter('all')">
             <i data-lucide="home" class="w-5 h-5"></i><span class="text-[10px] font-semibold">Home</span>
@@ -283,10 +297,12 @@
       </main>
     </div>
 
+    <!-- LAYER OVERLAYS & AVATAR UPLOAD -->
     <input type="file" id="avatarInput" accept="image/*" class="hidden" onchange="handleAvatarUpload(event)" />
     <div id="postMenu" class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xl overflow-hidden"></div>
     <div id="toastWrap"></div>
 
+    <!-- VIEWER MODAL -->
     <div id="viewerOverlay" class="fixed inset-0 z-50 hidden items-center justify-center p-0 md:p-3 modal-bg" onclick="overlayClickClose(event,'viewerOverlay')">
       <div class="relative bg-white dark:bg-slate-800 md:rounded-2xl shadow-2xl w-full h-full md:h-auto md:max-w-4xl md:max-h-[90vh] flex flex-col overflow-hidden anim-modal">
         <div class="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-slate-700 shrink-0">
@@ -304,6 +320,7 @@
       </div>
     </div>
 
+    <!-- UPLOAD MODAL -->
     <div id="uploadOverlay" class="fixed inset-0 z-50 hidden items-center justify-center p-4 modal-bg" onclick="overlayClickClose(event,'uploadOverlay')">
       <div class="relative bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden anim-modal">
         <div class="flex items-center justify-between px-5 py-4 border-b border-slate-200 dark:border-slate-700">
@@ -329,6 +346,7 @@
                 <div id="dzFill" class="h-full bg-indigo-500 transition-all duration-300" style="width:0%"></div>
               </div>
             </div>
+            <!-- Accept attribute removed to allow extended files natively, JS will validate -->
             <input type="file" id="fileInput" class="hidden" onchange="fileChosen(event)" />
           </div>
         </div>
@@ -339,6 +357,7 @@
       </div>
     </div>
 
+    <!-- FOSTHUB AUTH MODAL -->
     <div id="fosthubAuthOverlay" class="fixed inset-0 z-50 hidden items-center justify-center p-4 modal-bg" onclick="overlayClickClose(event,'fosthubAuthOverlay')">
       <div class="relative glass-panel rounded-2xl w-full max-w-sm overflow-hidden anim-modal border-t border-indigo-500/30">
         <div class="absolute -top-24 -right-24 w-48 h-48 bg-indigo-600 rounded-full mix-blend-screen filter blur-[70px] opacity-40 pointer-events-none"></div>
@@ -383,8 +402,15 @@
       </div>
     </div>
 
+    <!-- CORE SCRIPTS -->
     <script>
-      lucide.createIcons();
+      // Safe Icon Initialization Wrapper to prevent fatal script crashes
+      function refreshIcons() {
+        if (typeof lucide !== 'undefined') {
+          lucide.createIcons();
+        }
+      }
+      refreshIcons(); // Initial call
 
       const SB_URL = 'https://nzolsmouyulzqeaocejm.supabase.co';
       const SB_KEY = 'sb_publishable_EGX3jDjRh5LiXjdTw2AXxA_e1YIaP4Q';
@@ -697,7 +723,7 @@
         if (ext === 'html') return 'html';
         if (ext === 'apk') return 'apk';
         if (['zip','rar','7z'].includes(ext)) return 'archive';
-        if (['mp3','wav','ogg','webm','mp4','mkv'].includes(ext)) return 'media'; // Groups audio/video into media tab
+        if (['mp3','wav','ogg','webm','mp4','mkv'].includes(ext)) return 'media'; 
         return 'other';
       }
 
@@ -719,7 +745,7 @@
         if (!posts.length) { grid.innerHTML = emptyState('🔍', 'Zero matching items.'); return; }
         
         grid.innerHTML = posts.map(p => cardHTML(p)).join('');
-        lucide.createIcons();
+        refreshIcons();
         hydrateHtmlThumbs();
       }
 
@@ -747,11 +773,9 @@
         const avatarHtml = p.author_photo ? `<img src="${esc(p.author_photo)}" class="w-full h-full object-cover">` : `<span class="text-sm font-bold text-white">${author[0].toUpperCase()}</span>`;
         const t = p.file_url ? type : 'text';
 
-        // Prepare the payload for Kebab menu, adding file_url to trigger download option
-        const menuPayload = JSON.stringify({ id: p.id, author_email: p.author_email, file_url: p.file_url || null });
-
+        // Bug Fix: Pass ID directly to prevent JSON string parsing crashes caused by apostrophes in text posts
         return `
-          <div class="card-item bg-white dark:bg-slate-800 md:rounded-2xl shadow-sm border-y md:border border-slate-200 dark:border-slate-700 overflow-hidden cursor-pointer mb-4 md:mb-0" onclick='openViewer(${JSON.stringify(p)})'>
+          <div class="card-item bg-white dark:bg-slate-800 md:rounded-2xl shadow-sm border-y md:border border-slate-200 dark:border-slate-700 overflow-hidden cursor-pointer mb-4 md:mb-0" onclick="openViewer('${p.id}')">
             <div class="w-full aspect-video overflow-hidden bg-slate-100 dark:bg-slate-700 relative">
               ${thumbHtml}
               <span class="absolute bottom-2 right-2 px-1.5 py-0.5 text-[10px] font-bold uppercase rounded bg-black/75 text-white backdrop-blur-sm shadow-sm">${badgeLabel[t]||'File'}</span>
@@ -762,7 +786,7 @@
                 <h3 class="font-semibold text-base leading-snug line-clamp-2 text-slate-900 dark:text-slate-100">${esc(p.subject||p.title||'Untitled')}</h3>
                 <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 truncate">${esc(author)} • ${timeStr}</p>
               </div>
-              <button class="p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 shrink-0 -mr-1" onclick='event.stopPropagation();openPostMenu(event, ${menuPayload})'>
+              <button class="p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 shrink-0 -mr-1" onclick="event.stopPropagation(); openPostMenu(event, '${p.id}')">
                 <i data-lucide="more-vertical" class="w-4 h-4"></i>
               </button>
             </div>
@@ -788,12 +812,15 @@
             el.replaceWith(iframe);
           } catch {
             el.innerHTML = '<i data-lucide="globe" class="w-8 h-8 text-slate-400"></i>';
-            lucide.createIcons();
+            refreshIcons();
           }
         }
       }
 
-      function openPostMenu(e, post) {
+      function openPostMenu(e, id) {
+        const post = allPosts.find(x => String(x.id) === String(id));
+        if(!post) return;
+        
         const menu = el('postMenu');
         const showDel = currentUser && (currentUser.email === ADMIN_EMAIL || currentUser.role === 'Admin' || (post.author_email && currentUser.email === post.author_email));
         
@@ -814,8 +841,9 @@
         const rect = e.currentTarget.getBoundingClientRect();
         menu.style.cssText = `left:${Math.min(rect.right - 180, window.innerWidth - 190)}px; top:${rect.bottom + window.scrollY}px;`;
         menu.classList.add('open');
-        lucide.createIcons();
+        refreshIcons();
       }
+      
       function closePostMenu() { el('postMenu').classList.remove('open'); }
 
       async function deletePost(id) {
@@ -833,7 +861,10 @@
         }
       }
 
-      function openViewer(p) {
+      function openViewer(id) {
+        const p = allPosts.find(x => String(x.id) === String(id));
+        if(!p) return;
+        
         const author = p.author_name || p.title || 'Anonymous';
         el('viewerTitle').textContent  = p.subject || p.title || 'Post';
         el('viewerAuthor').textContent = author;
@@ -856,10 +887,9 @@
             });
           } else {
             content.innerHTML = `<div class="p-12 text-center"><i data-lucide="file" class="w-12 h-12 mx-auto text-slate-400 mb-3"></i><a href="${p.file_url}" target="_blank" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm">Download File</a></div>`;
-            lucide.createIcons();
+            refreshIcons();
           }
         } else {
-          // Bug Fix: Corrected text color classes to be visible in Light and Dark themes
           content.innerHTML = `<div class="p-6 md:p-12 text-base md:text-lg whitespace-pre-wrap leading-relaxed text-slate-900 dark:text-slate-100 flex items-center justify-center h-full">${esc(p.subject||'')}</div>`;
         }
         showOverlay('viewerOverlay');
@@ -885,11 +915,8 @@
         if (!file) return;
         const ext = file.name.split('.').pop().toLowerCase();
         
-        // Expanded Extension Check
         const allowedExts = ['html','pdf','txt','png','jpg','jpeg','gif','webp','svg','apk','zip','rar','docx','mp3','mp4','mkv','csv','xlsx'];
         if (!allowedExts.includes(ext)) { toast('Unsupported format', 'err'); return; }
-        
-        // Increased Size Limit to 50MB
         if (file.size > 50*1024*1024) { toast('Limit 50MB max', 'err'); return; }
         
         selectedFile = file;
@@ -913,6 +940,7 @@
             if (!r.ok) throw new Error();
             fileUrl = `${SB_URL}/storage/v1/object/public/${BUCKET}/${safeName}`;
           }
+          
           await fetch(`${SB_URL}/rest/v1/${TABLE}`, {
             method: 'POST',
             headers: { apikey:SB_KEY, 'Content-Type':'application/json' },
@@ -1169,4 +1197,68 @@
           recSeconds = 0; timerEl.textContent = '0:00';
           recTimerInt = setInterval(() => {
             recSeconds++;
-            const m = Math.floor(recSeconds /
+            const m = Math.floor(recSeconds / 60);
+            const s = (recSeconds % 60).toString().padStart(2, '0');
+            timerEl.textContent = `${m}:${s}`;
+          }, 1000);
+        } else {
+          normal.classList.remove('hidden'); normal.classList.add('flex');
+          rec.classList.add('hidden'); rec.classList.remove('flex');
+          clearInterval(recTimerInt);
+        }
+      }
+
+      async function uploadAndSendAudio(blob) {
+        toast('Sending voice message...', 'ok');
+        try {
+          const safeName = `voice_${currentUser.username}_${Date.now()}.webm`;
+          const r = await fetch(`${SB_URL}/storage/v1/object/${BUCKET}/${safeName}`, {
+            method: 'POST',
+            headers: { apikey:SB_KEY, Authorization:`Bearer ${SB_KEY}`, 'Content-Type': blob.type || 'audio/webm' },
+            body: blob
+          });
+          if (!r.ok) throw new Error();
+          
+          const url = `${SB_URL}/storage/v1/object/public/${BUCKET}/${safeName}`;
+          
+          const payload = { uid:chatUserId, name:currentUser.display_name, text: `[AUDIO::${url}]`, to_uid: currentThread?.uid || null };
+          chatMessages.push({...payload, created_at: new Date().toISOString()});
+          renderChatMessages();
+
+          await fetch(`${SB_URL}/rest/v1/chat_messages`, {
+            method:'POST', headers:{apikey:SB_KEY,'Content-Type':'application/json'}, body:JSON.stringify(payload)
+          });
+        } catch (e) {
+          toast('Failed to send voice message', 'err');
+        }
+      }
+      /* ----------------------------- */
+
+      function showOverlay(id) { el(id).classList.remove('hidden'); el(id).classList.add('flex'); }
+      function hideOverlay(id) { el(id).classList.add('hidden'); el(id).classList.remove('flex'); }
+      function overlayClickClose(e, id) { 
+        if (e.target.id === id) {
+          if (id === 'viewerOverlay') closeViewer();
+          else if (id === 'uploadOverlay') closeUpload();
+          else if (id === 'fosthubAuthOverlay') closeFostHubAuth();
+        } 
+      }
+      
+      function el(id) { return document.getElementById(id); }
+      function esc(s) { const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+      function timeAgo(iso) {
+        const s=Math.floor((Date.now()-new Date(iso))/1000);
+        if(s<60) return 'now'; if(s<3600) return Math.floor(s/60)+'m ago';
+        if(s<86400) return Math.floor(s/3600)+'h ago'; return new Date(iso).toLocaleDateString();
+      }
+      function emptyState(ico, msg) { return `<div class="col-span-full text-center py-16"><div class="text-4xl mb-2 opacity-50">${ico}</div><p class="text-sm text-slate-400">${msg}</p></div>`; }
+      function toast(msg, type='ok') {
+        const el = document.createElement('div');
+        el.className = `pointer-events-auto px-4 py-2.5 rounded-xl text-xs font-semibold shadow-2xl border-l-4 ${type==='ok'?'bg-slate-900 text-white border-green-500':'bg-slate-900 text-white border-red-500'}`;
+        el.style.animation = 'fadeUp .2s ease-out'; el.textContent = msg;
+        document.getElementById('toastWrap').appendChild(el);
+        setTimeout(() => el.remove(), 3000);
+      }
+    </script>
+  </body>
+</html>
