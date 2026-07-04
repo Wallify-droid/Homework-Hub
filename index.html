@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>FostHub</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Upgraded to ultra-resilient jsdelivr CDN to prevent icon loading crashes -->
     <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
     <script>
@@ -15,7 +14,17 @@
       }
     </script>
     <style>
-      *, *::before, *::after { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
+      *, *::before, *::after { 
+        box-sizing: border-box; 
+        -webkit-tap-highlight-color: transparent; 
+        outline: none; 
+        /* Master WebView Selection Shield: Lock down system-wide selection by default */
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+      }
+      
       body { font-family: 'Inter', sans-serif; }
       .scrollbar-thin::-webkit-scrollbar { width: 5px; height: 5px; }
       .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
@@ -32,6 +41,14 @@
       #postMenu { position: fixed; z-index: 9999; display: none; min-width: 170px; }
       #postMenu.open { display: block; }
       #toastWrap { position: fixed; bottom: 80px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; align-items: flex-end; pointer-events: none; }
+
+      /* Explicitly ALLOW text selection in designated safe semantic nodes so copying code/text still works */
+      .selectable-text, .selectable-text *, input, textarea {
+        -webkit-user-select: text !important;
+        -moz-user-select: text !important;
+        -ms-user-select: text !important;
+        user-select: text !important;
+      }
 
       @keyframes fadeUp { from { opacity:0; transform:translateY(12px) scale(.98) } to { opacity:1; transform:translateY(0) scale(1) } }
       @keyframes fadeIn { from { opacity:0 } to { opacity:1 } }
@@ -55,7 +72,6 @@
       .domain-suffix-group:focus-within { border-color: #6366f1; ring: 2px solid rgba(99,102,241,0.5); }
       .nav-item svg, .bnav-item svg { transition: fill 0.2s ease, color 0.2s ease; }
 
-      /* Voice Message Player Styling */
       audio { height: 38px; outline: none; border-radius: 19px; }
       audio::-webkit-media-controls-panel { background-color: rgba(255, 255, 255, 0.95); }
       .dark audio::-webkit-media-controls-panel { background-color: rgba(220, 225, 255, 0.9); }
@@ -216,7 +232,7 @@
                     <p class="font-semibold text-sm" id="chatThreadName">–</p>
                   </div>
                   
-                  <div id="chatMessages" class="flex-1 overflow-y-auto scrollbar-thin p-4 flex flex-col gap-3 min-h-0"></div>
+                  <div id="chatMessages" class="flex-1 overflow-y-auto scrollbar-thin p-4 flex flex-col gap-3 min-h-0 selectable-text"></div>
                   
                   <div class="px-4 py-2.5 border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shrink-0">
                     <!-- Text Input State -->
@@ -248,7 +264,7 @@
                   <p class="font-semibold text-sm" id="chatThreadNameMobile">–</p>
                 </div>
                 
-                <div id="chatMessagesMobile" class="flex-1 overflow-y-auto scrollbar-thin p-4 flex flex-col gap-3 min-h-0"></div>
+                <div id="chatMessagesMobile" class="flex-1 overflow-y-auto scrollbar-thin p-4 flex flex-col gap-3 min-h-0 selectable-text"></div>
                 
                 <div class="px-4 py-2.5 border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shrink-0">
                   <!-- Text Input State -->
@@ -309,7 +325,7 @@
           <h3 class="font-semibold text-base truncate flex-1 mr-3" id="viewerTitle">–</h3>
           <button onclick="closeViewer()" class="p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700"><i data-lucide="x" class="w-5 h-5"></i></button>
         </div>
-        <div id="viewerContent" class="flex-1 overflow-auto min-h-0 bg-slate-50 dark:bg-slate-900/50 flex items-center justify-center"></div>
+        <div id="viewerContent" class="flex-1 overflow-auto min-h-0 bg-slate-50 dark:bg-slate-900/50 flex items-center justify-center selectable-text"></div>
         <div class="flex items-center gap-3 px-4 py-4 border-t border-slate-200 dark:border-slate-700 shrink-0 bg-white dark:bg-slate-800">
           <div id="viewerAvatar" class="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold text-sm shrink-0 overflow-hidden shadow-sm"></div>
           <div class="min-w-0 flex-1">
@@ -346,7 +362,6 @@
                 <div id="dzFill" class="h-full bg-indigo-500 transition-all duration-300" style="width:0%"></div>
               </div>
             </div>
-            <!-- Accept attribute removed to allow extended files natively, JS will validate -->
             <input type="file" id="fileInput" class="hidden" onchange="fileChosen(event)" />
           </div>
         </div>
@@ -404,13 +419,12 @@
 
     <!-- CORE SCRIPTS -->
     <script>
-      // Safe Icon Initialization Wrapper to prevent fatal script crashes
       function refreshIcons() {
         if (typeof lucide !== 'undefined') {
           lucide.createIcons();
         }
       }
-      refreshIcons(); // Initial call
+      refreshIcons();
 
       const SB_URL = 'https://nzolsmouyulzqeaocejm.supabase.co';
       const SB_KEY = 'sb_publishable_EGX3jDjRh5LiXjdTw2AXxA_e1YIaP4Q';
@@ -764,7 +778,6 @@
           else if (type === 'apk') thumbHtml = `<div class="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-green-50 to-emerald-50 dark:from-slate-700 dark:to-slate-600"><i data-lucide="package" class="w-12 h-12 text-green-500"></i></div>`;
           else thumbHtml = `<div class="w-full h-full flex flex-col items-center justify-center bg-slate-100 dark:bg-slate-700"><i data-lucide="file" class="w-12 h-12 text-slate-400"></i></div>`;
         } else {
-          // Text-only fallback graphic
           thumbHtml = `<div class="w-full h-full p-4 md:p-6 bg-gradient-to-br from-indigo-50 to-slate-100 dark:from-slate-800 dark:to-slate-700 flex items-center justify-center text-center overflow-hidden">
             <p class="text-sm md:text-base font-medium text-slate-700 dark:text-slate-300 line-clamp-4 leading-relaxed">${esc(p.subject || p.title || '')}</p>
           </div>`;
@@ -772,8 +785,8 @@
 
         const avatarHtml = p.author_photo ? `<img src="${esc(p.author_photo)}" class="w-full h-full object-cover">` : `<span class="text-sm font-bold text-white">${author[0].toUpperCase()}</span>`;
         const t = p.file_url ? type : 'text';
+        const menuPayload = JSON.stringify({ id: p.id, author_email: p.author_email, file_url: p.file_url || null });
 
-        // Bug Fix: Pass ID directly to prevent JSON string parsing crashes caused by apostrophes in text posts
         return `
           <div class="card-item bg-white dark:bg-slate-800 md:rounded-2xl shadow-sm border-y md:border border-slate-200 dark:border-slate-700 overflow-hidden cursor-pointer mb-4 md:mb-0" onclick="openViewer('${p.id}')">
             <div class="w-full aspect-video overflow-hidden bg-slate-100 dark:bg-slate-700 relative">
@@ -983,9 +996,6 @@
         }
       }
 
-      /* ========================================================
-         SVG ACTIVE HIGHLIGHT INJECTOR
-      ======================================================== */
       function updateNavActive(f) {
         document.querySelectorAll('[data-filter]').forEach(el => {
           const active = el.dataset.filter === f;
